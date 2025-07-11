@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DesignDuet - Transform Your Vision Into Reality</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5B3E96',
+                        secondary: '#FF6B6B'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'pacifico': ['Pacifico', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body class="bg-gray-50">
+    <div id="leadModal" class="fixed inset-0 bg-black/50 z-[100] hidden items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative transform transition-all duration-300 scale-95 opacity-0"
+            id="modalContent">
+            <button class="absolute right-4 top-4 text-gray-400 hover:text-gray-600" onclick="closeModal()">
+                <i class="ri-close-line ri-lg"></i>
+            </button>
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Get Your Free Design Consultation</h3>
+                <p class="text-gray-600">Let's discuss your project and explore creative possibilities together.</p>
+            </div>
+            <form id="leadForm" class="space-y-4">
+                <div class="floating-label">
+                    <input type="text" id="leadName" name="name" placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300"
+                        required>
+                    <label for="leadName">Your Name</label>
+                </div>
+                <div class="floating-label">
+                    <input type="email" id="leadEmail" name="email" placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300"
+                        required>
+                    <label for="leadEmail">Email Address</label>
+                </div>
+                <div class="floating-label">
+                    <input type="tel" id="leadPhone" name="phone" placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300"
+                        required>
+                    <label for="leadPhone">Phone Number</label>
+                </div>
+                <div class="floating-label">
+                    <select id="leadService" name="service"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300 pr-8"
+                        required>
+                        <option value="">Select Service</option>
+                        <option value="graphic">Graphic Design</option>
+                        <option value="interior">Interior Design</option>
+                        <option value="digital">Digital Design</option>
+                        <option value="consultation">Design Consultation</option>
+                    </select>
+                    <label for="leadService">Interested Service</label>
+                </div>
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 !rounded-button text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
+                    Get Free Consultation
+                </button>
+            </form>
+            <div id="leadSuccessMessage" class="hidden">
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="ri-check-line text-green-500 ri-2x"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">Thank You!</h4>
+                    <p class="text-gray-600">We'll contact you shortly to discuss your project.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fixed right-8 bottom-24 z-50">
+        <button onclick="openModal()"
+            class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 !rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2">
+            <i class="ri-chat-1-line"></i>
+            <span>Get Free Consultation</span>
+        </button>
+    </div>
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="header">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-pacifico text-primary">DesignDuet</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Home
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#services"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Services
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#portfolio"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Portfolio
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#contact"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Contact
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <button
+                        class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 !rounded-button hover:shadow-lg transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
+                        Get Started
+                    </button>
+                </div>
+                <button class="md:hidden text-gray-700 hover:text-primary transition-colors duration-300"
+                    id="mobile-menu-btn">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <i class="ri-menu-line ri-lg"></i>
+                    </div>
+                </button>
+            </div>
+        </nav>
+        <div class="md:hidden bg-white shadow-lg transform -translate-y-full transition-transform duration-300"
+            id="mobile-menu">
+            <div class="px-4 py-6 space-y-4">
+                <a href="#home" class="block text-gray-700 hover:text-primary transition-colors duration-300">Home</a>
+                <a href="#services"
+                    class="block text-gray-700 hover:text-primary transition-colors duration-300">Services</a>
+                <a href="#portfolio"
+                    class="block text-gray-700 hover:text-primary transition-colors duration-300">Portfolio</a>
+                <a href="#contact"
+                    class="block text-gray-700 hover:text-primary transition-colors duration-300">Contact</a>
+                <button
+                    class="w-full bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 !rounded-button hover:shadow-lg transition-all duration-300 whitespace-nowrap">
+                    Get Started
+                </button>
+            </div>
+        </div>
+    </header>
+    <section id="home" class="min-h-screen flex items-center relative overflow-hidden"
+        style="background-image: url('https://readdy.ai/api/search-image?query=modern%20minimalist%20creative%20design%20studio%20workspace%20with%20geometric%20patterns%2C%20soft%20lighting%2C%20contemporary%20furniture%2C%20clean%20white%20background%20with%20subtle%20purple%20and%20coral%20accents%2C%20professional%20photography%20style%2C%20high%20contrast%2C%20left%20side%20empty%20space%20for%20text%20overlay&width=1920&height=1080&seq=hero-bg-001&orientation=landscape'); background-size: cover; background-position: center; background-attachment: fixed;">
+        <div class="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-8">
+                    <div class="space-y-4">
+                        <h1 class="text-5xl lg:text-7xl font-black leading-tight">
+                            <span class="block text-gray-900">Transform</span>
+                            <span class="block gradient-text">Your Vision</span>
+                            <span class="block text-gray-900">Into Reality</span>
+                        </h1>
+                        <p class="text-xl text-gray-600 max-w-xl leading-relaxed">
+                            We craft exceptional designs that tell your story. From graphic design to interior spaces,
+                            we bring creativity and innovation to every project.
+                        </p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button
+                            class="bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 !rounded-button text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
+                            Start Your Project
+                        </button>
+                        <button
+                            class="border-2 border-primary text-primary px-8 py-4 !rounded-button text-lg font-semibold hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap">
+                            View Portfolio
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-8 pt-8">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary">500+</div>
+                            <div class="text-sm text-gray-600">Projects Completed</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary">150+</div>
+                            <div class="text-sm text-gray-600">Happy Clients</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary">5+</div>
+                            <div class="text-sm text-gray-600">Years Experience</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden lg:flex justify-center items-center">
+                    <div class="relative">
+                        <div
+                            class="w-96 h-96 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 animate-pulse-slow">
+                        </div>
+                        <div
+                            class="absolute top-8 left-8 w-80 h-80 rounded-full bg-gradient-to-br from-secondary/30 to-primary/30 animate-float">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="services" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Our Creative Services</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    We offer comprehensive design solutions tailored to bring your unique vision to life with
+                    exceptional creativity and precision.
+                </p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="service-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-6">
+                        <i class="ri-palette-line text-white ri-2x"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Graphic Design</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        From brand identity to marketing materials, we create visually stunning graphics that
+                        communicate your message effectively and leave lasting impressions.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Logo & Brand Identity
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Print & Digital Design
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Marketing Materials
+                        </li>
+                    </ul>
+                </div>
+                <div class="service-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-secondary to-primary rounded-xl flex items-center justify-center mb-6">
+                        <i class="ri-home-4-line text-white ri-2x"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Interior Design</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Transform your spaces into functional works of art. Our interior design services blend
+                        aesthetics with practicality to create environments you'll love.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Residential Design
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Commercial Spaces
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            3D Visualization
+                        </li>
+                    </ul>
+                </div>
+                <div class="service-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-6">
+                        <i class="ri-computer-line text-white ri-2x"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Digital Design</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Create engaging digital experiences with our web design, UI/UX, and digital marketing design
+                        services that captivate and convert your audience.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Web Design & UI/UX
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Social Media Graphics
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Digital Marketing Assets
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="portfolio" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Our Creative Portfolio</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-12">
+                    Explore our diverse collection of projects that showcase our expertise across various design
+                    disciplines.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4 mb-12">
+                    <button
+                        class="filter-btn active px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
+                        data-filter="all">
+                        All Projects
+                    </button>
+                    <button
+                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
+                        data-filter="graphic">
+                        Graphic Design
+                    </button>
+                    <button
+                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
+                        data-filter="interior">
+                        Interior Design
+                    </button>
+                    <button
+                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
+                        data-filter="digital">
+                        Digital Design
+                    </button>
+                </div>
+            </div>
+            <div class="masonry-grid" id="portfolio-grid">
+                <div class="masonry-item portfolio-item" data-category="graphic">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="https://readdy.ai/api/search-image?query=modern%20minimalist%20logo%20design%20branding%20identity%20creative%20typography%20clean%20professional%20business%20card%20mockup%20white%20background%20high%20quality%20design%20studio%20work&width=400&height=300&seq=portfolio-001&orientation=landscape"
+                                alt="Brand Identity Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Luxury Brand Identity</h4>
+                                    <p class="text-sm opacity-90">Complete branding solution for premium lifestyle brand
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="interior">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="https://readdy.ai/api/search-image?query=modern%20minimalist%20interior%20design%20living%20room%20contemporary%20furniture%20clean%20lines%20neutral%20colors%20natural%20lighting%20architectural%20photography%20professional%20high-end%20residential%20space&width=400&height=500&seq=portfolio-002&orientation=portrait"
+                                alt="Modern Living Space"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Modern Living Space</h4>
+                                    <p class="text-sm opacity-90">Contemporary residential interior with minimalist
+                                        aesthetics</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="digital">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="https://readdy.ai/api/search-image?query=modern%20website%20design%20user%20interface%20clean%20layout%20mobile%20responsive%20design%20colorful%20gradient%20elements%20professional%20web%20design%20mockup%20on%20laptop%20screen&width=400&height=280&seq=portfolio-003&orientation=landscape"
+                                alt="Website Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">E-commerce Platform</h4>
+                                    <p class="text-sm opacity-90">User-friendly online shopping experience design</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="graphic">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="https://readdy.ai/api/search-image?query=creative%20poster%20design%20typography%20layout%20colorful%20modern%20graphic%20design%20print%20advertisement%20marketing%20material%20professional%20studio%20photography%20clean%20background&width=400&height=600&seq=portfolio-004&orientation=portrait"
+                                alt="Poster Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Event Poster Series</h4>
+                                    <p class="text-sm opacity-90">Creative promotional materials for cultural events</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="interior">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="https://readdy.ai/api/search-image?query=modern%20office%20interior%20design%20workspace%20contemporary%20furniture%20clean%20minimalist%20style%20professional%20lighting%20open%20space%20collaborative%20environment%20architectural%20photography&width=400&height=320&seq=portfolio-005&orientation=landscape"
+                                alt="Office Interior"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Corporate Office Design</h4>
+                                    <p class="text-sm opacity-90">Productive workspace with modern aesthetic appeal</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="digital">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="https://readdy.ai/api/search-image?query=mobile%20app%20design%20user%20interface%20modern%20clean%20layout%20smartphone%20mockup%20colorful%20gradient%20design%20elements%20user%20experience%20design%20professional%20presentation&width=400&height=480&seq=portfolio-006&orientation=portrait"
+                                alt="Mobile App Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Mobile App Interface</h4>
+                                    <p class="text-sm opacity-90">Intuitive user experience for fitness tracking app</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Why Choose DesignDuet?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    We combine creativity, expertise, and dedication to deliver exceptional design solutions that exceed
+                    expectations.
+                </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center group">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-lightbulb-line text-white ri-2x"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Creative Excellence</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Our team of talented designers brings fresh perspectives and innovative solutions to every
+                        project, ensuring your brand stands out from the competition.
+                    </p>
+                    <div class="mt-6 text-4xl font-bold text-primary">98%</div>
+                    <div class="text-sm text-gray-600">Client Satisfaction Rate</div>
+                </div>
+                <div class="text-center group">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-br from-secondary to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-time-line text-white ri-2x"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Timely Delivery</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        We understand the importance of deadlines and consistently deliver high-quality work on time,
+                        helping you stay ahead of your schedule and goals.
+                    </p>
+                    <div class="mt-6 text-4xl font-bold text-primary">24h</div>
+                    <div class="text-sm text-gray-600">Average Response Time</div>
+                </div>
+                <div class="text-center group">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-customer-service-2-line text-white ri-2x"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Personalized Service</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Every client receives dedicated attention and customized solutions. We work closely with you to
+                        understand your vision and bring it to life perfectly.
+                    </p>
+                    <div class="mt-6 text-4xl font-bold text-primary">1:1</div>
+                    <div class="text-sm text-gray-600">Dedicated Project Manager</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="contact" class="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-start">
+                <div>
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Let's Create Something Amazing
+                        Together</h2>
+                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                        Ready to transform your vision into reality? Get in touch with our creative team and let's
+                        discuss how we can bring your project to life.
+                    </p>
+                    <div class="space-y-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                                <i class="ri-phone-line text-white ri-lg"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Phone</div>
+                                <div class="text-gray-600">+1 (555) 123-4567</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center">
+                                <i class="ri-mail-line text-white ri-lg"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Email</div>
+                                <div class="text-gray-600">hello@designduet.com</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                                <i class="ri-map-pin-line text-white ri-lg"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Location</div>
+                                <div class="text-gray-600">123 Creative Street, Design District, NY 10001</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-12">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Follow Us</h3>
+                        <div class="flex space-x-4">
+                            <a href="#"
+                                class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300">
+                                <i class="ri-facebook-fill text-primary ri-lg"></i>
+                            </a>
+                            <a href="#"
+                                class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300">
+                                <i class="ri-twitter-fill text-primary ri-lg"></i>
+                            </a>
+                            <a href="#"
+                                class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300">
+                                <i class="ri-instagram-fill text-primary ri-lg"></i>
+                            </a>
+                            <a href="#"
+                                class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300">
+                                <i class="ri-linkedin-fill text-primary ri-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl p-8 shadow-xl">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Start Your Project</h3>
+                    <form id="contact-form" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="floating-label">
+                                <input type="text" id="firstName" placeholder=" "
+                                    class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300"
+                                    required>
+                                <label for="firstName">First Name</label>
+                            </div>
+                            <div class="floating-label">
+                                <input type="text" id="lastName" placeholder=" "
+                                    class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300"
+                                    required>
+                                <label for="lastName">Last Name</label>
+                            </div>
+                        </div>
+                        <div class="floating-label">
+                            <input type="email" id="email" placeholder=" "
+                                class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300"
+                                required>
+                            <label for="email">Email Address</label>
+                        </div>
+                        <div class="floating-label">
+                            <input type="tel" id="phone" placeholder=" "
+                                class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300">
+                            <label for="phone">Phone Number</label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Service Needed</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" class="sr-only" value="graphic">
+                                        <div
+                                            class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
+                                        </div>
+                                        <i
+                                            class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
+                                    </div>
+                                    <span class="text-gray-700">Graphic Design</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" class="sr-only" value="interior">
+                                        <div
+                                            class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
+                                        </div>
+                                        <i
+                                            class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
+                                    </div>
+                                    <span class="text-gray-700">Interior Design</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" class="sr-only" value="digital">
+                                        <div
+                                            class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
+                                        </div>
+                                        <i
+                                            class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
+                                    </div>
+                                    <span class="text-gray-700">Digital Design</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" class="sr-only" value="consultation">
+                                        <div
+                                            class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
+                                        </div>
+                                        <i
+                                            class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
+                                    </div>
+                                    <span class="text-gray-700">Consultation</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="floating-label">
+                            <textarea id="message" rows="4" placeholder=" "
+                                class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300 resize-none"
+                                required></textarea>
+                            <label for="message">Project Details</label>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 !rounded-button text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
+                            Send Message
+                        </button>
+                    </form>
+                    <div id="success-message"
+                        class="hidden mt-6 p-4 bg-green-50 border border-green-200 !rounded-button">
+                        <div class="flex items-center">
+                            <i class="ri-check-circle-line text-green-500 mr-2"></i>
+                            <span class="text-green-700">Thank you! Your message has been sent successfully.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-6">
+                        <span class="text-3xl font-pacifico text-white">DesignDuet</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 max-w-md leading-relaxed">
+                        We're passionate about creating exceptional designs that tell your story and bring your vision
+                        to life. Let's create something amazing together.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-facebook-fill"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-twitter-fill"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-instagram-fill"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-linkedin-fill"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Services</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Graphic Design</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Interior Design</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Digital Design</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Brand Identity</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Consultation</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#home" class="hover:text-white transition-colors duration-300">Home</a></li>
+                        <li><a href="#services" class="hover:text-white transition-colors duration-300">Services</a>
+                        </li>
+                        <li><a href="#portfolio" class="hover:text-white transition-colors duration-300">Portfolio</a>
+                        </li>
+                        <li><a href="#contact" class="hover:text-white transition-colors duration-300">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">About Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        © 2024 DesignDuet. All rights reserved.
+                    </p>
+                    <div class="flex space-x-6 mt-4 md:mt-0">
+                        <a href="#"
+                            class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Privacy
+                            Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms
+                            of Service</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Cookie
+                            Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <button
+        class="scroll-to-top bg-gradient-to-r from-primary to-secondary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+        id="scrollToTop">
+        <i class="ri-arrow-up-line"></i>
+    </button>
+    <script id="header-scroll">
+        document.addEventListener('DOMContentLoaded', function () {
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 100) {
+                    header.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+                } else {
+                    header.classList.remove('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+                }
+            });
+        });
+    </script>
+    <script id="mobile-menu">
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', function () {
+                mobileMenu.classList.toggle('-translate-y-full');
+            });
+        });
+    </script>
+    <script id="portfolio-filter">
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const portfolioItems = document.querySelectorAll('.portfolio-item');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const filter = this.getAttribute('data-filter');
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    portfolioItems.forEach(item => {
+                        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+    <script id="contact-form">
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('contact-form');
+            const successMessage = document.getElementById('success-message');
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const customBox = this.parentElement.querySelector('.checkbox-custom');
+                    const icon = this.parentElement.querySelector('.checkbox-icon');
+                    if (this.checked) {
+                        customBox.classList.add('bg-primary', 'border-primary');
+                        icon.classList.remove('opacity-0');
+                    } else {
+                        customBox.classList.remove('bg-primary', 'border-primary');
+                        icon.classList.add('opacity-0');
+                    }
+                });
+            });
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                setTimeout(() => {
+                    form.style.display = 'none';
+                    successMessage.classList.remove('hidden');
+                }, 500);
+            });
+        });
+    </script>
+    <script id="scroll-to-top">
+        document.addEventListener('DOMContentLoaded', function () {
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 500) {
+                    scrollToTopBtn.classList.add('show');
+                } else {
+                    scrollToTopBtn.classList.remove('show');
+                }
+            });
+            scrollToTopBtn.addEventListener('click', function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    <script id="lead-modal">
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('leadModal');
+            const modalContent = document.getElementById('modalContent');
+            const leadForm = document.getElementById('leadForm');
+            const successMessage = document.getElementById('leadSuccessMessage');
+            window.openModal = function () {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 50);
+            }
+            window.closeModal = function () {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    if (successMessage.classList.contains('hidden')) {
+                        leadForm.reset();
+                    }
+                }, 300);
+            }
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            leadForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                leadForm.style.display = 'none';
+                successMessage.classList.remove('hidden');
+                setTimeout(() => {
+                    closeModal();
+                    setTimeout(() => {
+                        successMessage.classList.add('hidden');
+                        leadForm.style.display = 'block';
+                    }, 300);
+                }, 2000);
+            });
+        });
+    </script>
+    <script id="smooth-scroll">
+        document.addEventListener('DOMContentLoaded', function () {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        const offsetTop = targetSection.offsetTop - 80;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,115 @@
+:where([class^="ri-"])::before {
+    content: "\f3c2";
+}
+body {
+    font-family: 'Inter', sans-serif;
+}
+.gradient-text {
+    background: linear-gradient(135deg, #5B3E96, #FF6B6B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.floating-label {
+    position: relative;
+}
+.floating-label input,
+.floating-label textarea {
+    padding-top: 1.5rem;
+    padding-bottom: 0.5rem;
+}
+.floating-label label {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    color: #9CA3AF;
+}
+.floating-label input:focus+label,
+.floating-label input:not(:placeholder-shown)+label,
+.floating-label textarea:focus+label,
+.floating-label textarea:not(:placeholder-shown)+label {
+    top: 0.25rem;
+    font-size: 0.75rem;
+    color: #5B3E96;
+}
+.portfolio-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.portfolio-item:hover {
+    transform: translateY(-8px);
+}
+.service-card {
+    transition: all 0.3s ease;
+}
+.service-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(91, 62, 150, 0.15);
+}
+.parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+.animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse-slow {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+.filter-btn.active {
+    background: linear-gradient(135deg, #5B3E96, #FF6B6B);
+    color: white;
+}
+.masonry-grid {
+    column-count: 3;
+    column-gap: 1.5rem;
+}
+@media (max-width: 768px) {
+    .masonry-grid {
+        column-count: 2;
+    }
+}
+@media (max-width: 480px) {
+    .masonry-grid {
+        column-count: 1;
+    }
+}
+.masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+}
+.scroll-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+.scroll-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
