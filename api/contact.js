@@ -1,49 +1,63 @@
 // api/contact.js
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
-module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ status: 'error', message: 'Method Not Allowed' });
+export default async function handler(req, res) {
+    if (req.method === 'POST') {
+        const { firstName, lastName, email, phone, service, message } = req.body;
+
+        if (!firstName || !lastName || !email || !message) {
+            return res.status(400).json({ status: 'error', message: 'First Name, Last Name, Email, and Project Details are required.' });
+        }
+
+        // Create a Nodemailer transporter using environment variables
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT, 10),
+            secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
+
+        const serviceList = Array.isArray(service) && service.length > 0
+            ? service.map(s => `<li>${s.charAt(0).toUpperCase() + s.slice(1)} Design</li>`).join('')
+            : '<li>No specific service selected</li>';
+
+        // Email content
+        const mailOptions = {
+            from: process.env.EMAIL_FROM, // Sender address (must be configured on your SMTP server)
+            to: process.env.EMAIL_TO_CONTACT, // Receiver address for general contact emails
+            subject: `New Contact Message from DesignDuet Website: ${firstName} ${lastName}`,
+            html: `
+                <p>You have a new contact message from the DesignDuet website!</p>
+                <ul>
+                    <li><strong>Name:</strong> ${firstName} ${lastName}</li>
+                    <li><strong>Email:</strong> ${email}</li>
+                    <li><strong>Phone:</strong> ${phone || 'N/A'}</li>
+                    <li><strong>Services Needed:</strong>
+                        <ul>
+                            ${serviceList}
+                        </ul>
+                    </li>
+                    <li><strong>Project Details:</strong> ${message}</li>
+                </ul>
+            `,
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+            return res.status(200).json({ status: 'success', message: 'Message sent successfully!' });
+        } catch (error) {
+            console.error('Error sending contact email:', error);
+            // Log the full error to Vercel logs for debugging
+            if (error.response) {
+                console.error('Nodemailer response:', error.response);
+            }
+            return res.status(500).json({ status: 'error', message: 'Failed to send message. Please try again later.' });
+        }
+    } else {
+        res.setHeader('Allow', ['POST']);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-
-    const { firstName, lastName, email, phone, service, message } = req.body;
-
-    if (!firstName || !lastName || !email || !message) {
-        return res.status(400).json({ status: 'error', message: 'Missing required fields.' });
-    }
-
-    // Configure Nodemailer transporter using environment variables
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
-
-    const services = Array.isArray(service) ? service.join(', ') : service || 'N/A';
-
-    const mailOptions = {
-        from: process.env.EMAIL_FROM || `"${firstName} ${lastName}" <${email}>`, // Or a fixed 'from' address
-        to: process.env.EMAIL_TO_CONTACT, // Your recipient email address for contact forms
-        subject: `New Contact Form Submission from ${firstName} ${lastName}`,
-        html: `
-            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
-            <p><strong>Service Needed:</strong> ${services}</p>
-            <p><strong>Project Details:</strong></p>
-            <p>${message}</p>
-        `,
-    };
-
-    try {
-        await transporter.sendMail(mailOptions);
-        res.status(200).json({ status: 'success', message: 'Your message has been sent successfully!' });
-    } catch (error) {
-        console.error('Error sending contact email:', error);
-        res.status(500).json({ status: 'error', message: 'Failed to send message. Please try again later.' });
-    }
-};
+}
