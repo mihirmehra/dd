@@ -5,7 +5,7 @@ body {
     font-family: 'Inter', sans-serif;
 }
 .gradient-text {
-    background: linear-gradient(135deg, #5B3E96, #FF6B6B);
+    background: linear-gradient(135deg, #A238F0, #3B3CFD);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -32,7 +32,7 @@ body {
 .floating-label textarea:not(:placeholder-shown)+label {
     top: 0.25rem;
     font-size: 0.75rem;
-    color: #5B3E96;
+    color: #A238F0;
 }
 .portfolio-item {
     transition: all 0.3s ease;
@@ -79,7 +79,7 @@ body {
     }
 }
 .filter-btn.active {
-    background: linear-gradient(135deg, #5B3E96, #FF6B6B);
+    background: linear-gradient(135deg, #A238F0, #3B3CFD);
     color: white;
 }
 .masonry-grid {
@@ -112,4 +112,8 @@ body {
 .scroll-to-top.show {
     opacity: 1;
     visibility: visible;
+}
+
+.brand-logo{
+    width: 250px;
 }

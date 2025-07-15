@@ -17,8 +17,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#5B3E96',
-                        secondary: '#FF6B6B'
+                        primary: '#A238F0',
+                        secondary: '#3B3CFD'
                     },
                     borderRadius: {
                         'none': '0px',
@@ -78,9 +78,9 @@
                         class="w-full px-4 py-3 border border-gray-300 !rounded-button focus:border-primary focus:ring-0 focus:outline-none transition-colors duration-300 pr-8"
                         required>
                         <option value="">Select Service</option>
-                        <option value="graphic">Graphic Design</option>
-                        <option value="interior">Interior Design</option>
-                        <option value="digital">Digital Design</option>
+                        <option value="web">Web Design Services</option>
+                        <option value="graphic">Graphic Design Services</option>
+                        <option value="printing">Printing Design Services</option>
                         <option value="consultation">Design Consultation</option>
                     </select>
                     <label for="leadService">Interested Service</label>
@@ -121,7 +121,7 @@
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <span class="text-2xl font-pacifico text-primary">DesignDuet</span>
+                    <img class="brand-logo" src="assets/img/logo.png" alt="DesignDuet">
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#home"
@@ -246,75 +246,92 @@
                 <div class="service-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
                     <div
                         class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-6">
-                        <i class="ri-palette-line text-white ri-2x"></i>
+                        <i class="ri-computer-line text-white ri-2x"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Graphic Design</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Web Design Services</h3>
                     <p class="text-gray-600 mb-6 leading-relaxed">
-                        From brand identity to marketing materials, we create visually stunning graphics that
-                        communicate your message effectively and leave lasting impressions.
+                        We help businesses build or improve websites to boost user experience, brand identity, and online results.
                     </p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Logo & Brand Identity
+                            Custom website layout and structure
                         </li>
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Print & Digital Design
+                            Visual design and branding
                         </li>
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Marketing Materials
+                            Content creation & SEO fundamentals
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Mobile and responsive design
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            E-commerce setup & Site maintenance
                         </li>
                     </ul>
                 </div>
                 <div class="service-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
                     <div
                         class="w-16 h-16 bg-gradient-to-br from-secondary to-primary rounded-xl flex items-center justify-center mb-6">
-                        <i class="ri-home-4-line text-white ri-2x"></i>
+                        <i class="ri-palette-line text-white ri-2x"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Interior Design</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Graphic Design Services</h3>
                     <p class="text-gray-600 mb-6 leading-relaxed">
-                        Transform your spaces into functional works of art. Our interior design services blend
-                        aesthetics with practicality to create environments you'll love.
+                        We create visual content to help businesses build strong brand identities and communicate effectively.
                     </p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Residential Design
+                            Logo and brand design
                         </li>
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Commercial Spaces
+                            Marketing materials (brochures, business cards, posters)
                         </li>
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            3D Visualization
+                            Social media and digital graphics
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Website and app visuals
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Packaging and print design, Infographics and presentations
                         </li>
                     </ul>
                 </div>
                 <div class="service-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
                     <div
                         class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-6">
-                        <i class="ri-computer-line text-white ri-2x"></i>
+                        <i class="ri-printer-line text-white ri-2x"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Digital Design</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Printing Design Services</h3>
                     <p class="text-gray-600 mb-6 leading-relaxed">
-                        Create engaging digital experiences with our web design, UI/UX, and digital marketing design
-                        services that captivate and convert your audience.
+                        We focus on producing high-quality printed materials that help promote your brand and business effectively.
                     </p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Web Design & UI/UX
+                            Brochure Printing (custom sizes, finishes, folding options)
                         </li>
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Social Media Graphics
+                            Visiting Cards (premium paper, embossing, spot UV)
                         </li>
                         <li class="flex items-center">
                             <i class="ri-check-line text-primary mr-2"></i>
-                            Digital Marketing Assets
+                            Flyers Printing (various sizes, vibrant colors)
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i>
+                            Banners Printing (durable materials, indoor/outdoor use)
                         </li>
                     </ul>
                 </div>
@@ -337,18 +354,18 @@
                     </button>
                     <button
                         class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
+                        data-filter="web">
+                        Web Design
+                    </button>
+                    <button
+                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
                         data-filter="graphic">
                         Graphic Design
                     </button>
                     <button
                         class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
-                        data-filter="interior">
-                        Interior Design
-                    </button>
-                    <button
-                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
-                        data-filter="digital">
-                        Digital Design
+                        data-filter="printing">
+                        Printing Design
                     </button>
                 </div>
             </div>
@@ -370,7 +387,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="masonry-item portfolio-item" data-category="interior">
+                <div class="masonry-item portfolio-item" data-category="web">
                     <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
                         <div class="relative overflow-hidden">
                             <img src="assets/img/d-2.jpg"
@@ -387,7 +404,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="masonry-item portfolio-item" data-category="digital">
+                <div class="masonry-item portfolio-item" data-category="web">
                     <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
                         <div class="relative overflow-hidden">
                             <img src="assets/img/d-3.jpg"
@@ -419,7 +436,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="masonry-item portfolio-item" data-category="interior">
+                <div class="masonry-item portfolio-item" data-category="printing">
                     <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
                         <div class="relative overflow-hidden">
                             <img src="assets/img/d-5.jpg"
@@ -435,10 +452,58 @@
                         </div>
                     </div>
                 </div>
-                <div class="masonry-item portfolio-item" data-category="digital">
+                <div class="masonry-item portfolio-item" data-category="web">
                     <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
                         <div class="relative overflow-hidden">
                             <img src="assets/img/d-6.jpg"
+                                alt="Mobile App Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Mobile App Interface</h4>
+                                    <p class="text-sm opacity-90">Intuitive user experience for fitness tracking app</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="web">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="assets/img/d-7.jpg"
+                                alt="Mobile App Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Mobile App Interface</h4>
+                                    <p class="text-sm opacity-90">Intuitive user experience for fitness tracking app</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="web">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="assets/img/d-8.jpg"
+                                alt="Mobile App Design"
+                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6 text-white">
+                                    <h4 class="text-lg font-semibold mb-2">Mobile App Interface</h4>
+                                    <p class="text-sm opacity-90">Intuitive user experience for fitness tracking app</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="masonry-item portfolio-item" data-category="web">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
+                        <div class="relative overflow-hidden">
+                            <img src="assets/img/d-9.jpg"
                                 alt="Mobile App Design"
                                 class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
                             <div
@@ -523,7 +588,7 @@
                             </div>
                             <div>
                                 <div class="font-semibold text-gray-900">Phone</div>
-                                <div class="text-gray-600">+1 (555) 123-4567</div>
+                                <a href="tel:9310412672"><div class="text-gray-600">+91-9310412672</div></a>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
@@ -532,7 +597,7 @@
                             </div>
                             <div>
                                 <div class="font-semibold text-gray-900">Email</div>
-                                <div class="text-gray-600">hello@designduet.com</div>
+                                <a href="mailto:info@designduet.in"><div class="text-gray-600">info@designduet.in</div></a>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
@@ -541,7 +606,7 @@
                             </div>
                             <div>
                                 <div class="font-semibold text-gray-900">Location</div>
-                                <div class="text-gray-600">123 Creative Street, Design District, NY 10001</div>
+                                <div class="text-gray-600">India</div>
                             </div>
                         </div>
                     </div>
@@ -600,6 +665,17 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="flex items-center space-x-3 cursor-pointer">
                                     <div class="relative">
+                                        <input type="checkbox" class="sr-only" name="service[]" value="web">
+                                        <div
+                                            class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
+                                        </div>
+                                        <i
+                                            class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
+                                    </div>
+                                    <span class="text-gray-700">Web Design</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <div class="relative">
                                         <input type="checkbox" class="sr-only" name="service[]" value="graphic">
                                         <div
                                             class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
@@ -611,25 +687,14 @@
                                 </label>
                                 <label class="flex items-center space-x-3 cursor-pointer">
                                     <div class="relative">
-                                        <input type="checkbox" class="sr-only" name="service[]" value="interior">
+                                        <input type="checkbox" class="sr-only" name="service[]" value="printing">
                                         <div
                                             class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
                                         </div>
                                         <i
                                             class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
                                     </div>
-                                    <span class="text-gray-700">Interior Design</span>
-                                </label>
-                                <label class="flex items-center space-x-3 cursor-pointer">
-                                    <div class="relative">
-                                        <input type="checkbox" class="sr-only" name="service[]" value="digital">
-                                        <div
-                                            class="w-5 h-5 border-2 border-gray-300 rounded transition-all duration-300 checkbox-custom">
-                                        </div>
-                                        <i
-                                            class="ri-check-line absolute top-0 left-0 w-5 h-5 text-white text-xs flex items-center justify-center opacity-0 transition-opacity duration-300 checkbox-icon"></i>
-                                    </div>
-                                    <span class="text-gray-700">Digital Design</span>
+                                    <span class="text-gray-700">Printing Design</span>
                                 </label>
                                 <label class="flex items-center space-x-3 cursor-pointer">
                                     <div class="relative">
@@ -706,9 +771,9 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Services</h4>
                     <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Web Design</a></li>
                         <li><a href="#" class="hover:text-white transition-colors duration-300">Graphic Design</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Interior Design</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Digital Design</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">Printing Design</a></li>
                         <li><a href="#" class="hover:text-white transition-colors duration-300">Brand Identity</a></li>
                         <li><a href="#" class="hover:text-white transition-colors duration-300">Consultation</a></li>
                     </ul>

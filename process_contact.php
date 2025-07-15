@@ -28,15 +28,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'mihirmehrajio@gmail.com'; // Your Gmail address
-        $mail->Password   = 'zwmq uerj yqwj acfv';     // Your App password
+        $mail->Username   = 'designduet329@gmail.com'; // Your Gmail address
+        $mail->Password   = 'nmqv hrru exxy rapn';     // Your App password
         $mail->SMTPSecure = 'tls';
         $mail->Port       = 587;
 
         //Recipients
-        $mail->setFrom('info@designduet.com', 'DesignDuet Contact'); // Your website's email address and name
-        $mail->addAddress('info@designduet.com'); // Recipient for contact form
-        $mail->addAddress('mihirmehrajio@gmail.com'); // Additional recipient
+        $mail->setFrom('info@designduet.com', 'DesignDuet Lead'); // Your website's email address and name
+        $mail->addAddress('info@designduet.com'); // Recipient for leads
+        $mail->addAddress('designduet329@gmail.com'); // Additional recipient
 
 
         // Content
