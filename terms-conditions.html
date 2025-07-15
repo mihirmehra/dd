@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions - DesignDuet</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#A238F0',
+                        secondary: '#3B3CFD'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'pacifico': ['Pacifico', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #A238F0, #3B3CFD);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .scroll-to-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease-in-out;
+        }
+        .scroll-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="header">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/">
+                        <img class="brand-logo" src="assets/img/logo.png" alt="DesignDuet">
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Home
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#services"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Services
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#portfolio"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Portfolio
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#contact"
+                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                        Contact
+                        <span
+                            class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <button onclick="window.location.href='#contact'"
+                        class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 !rounded-button hover:shadow-lg transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
+                        Get Started
+                    </button>
+                </div>
+                <button class="md:hidden text-gray-700 hover:text-primary transition-colors duration-300"
+                    id="mobile-menu-btn">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <i class="ri-menu-line ri-lg"></i>
+                    </div>
+                </button>
+            </div>
+        </nav>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="mobile-menu-overlay"></div>
+        <div class="fixed top-0 right-0 w-64 h-full bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50 md:hidden"
+            id="mobile-sidebar">
+            <div class="px-6 py-8 space-y-6">
+                <button class="absolute top-4 left-4 text-gray-700 hover:text-primary transition-colors duration-300"
+                    id="close-sidebar-btn">
+                    <i class="ri-close-line ri-xl"></i>
+                </button>
+                <div class="mt-10 space-y-4">
+                    <a href="#home"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Home</a>
+                    <a href="#services"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Services</a>
+                    <a href="#portfolio"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Portfolio</a>
+                    <a href="#contact"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Contact</a>
+                    <button onclick="window.location.href='#contact'"
+                        class="w-full bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 !rounded-button hover:shadow-lg transition-all duration-300 whitespace-nowrap text-lg">
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="py-20 bg-gray-50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Terms and Conditions</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Please read these terms and conditions carefully before using our website and services.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-xl space-y-8 text-gray-700 leading-relaxed">
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">1. Introduction</h2>
+                    <p>Welcome to DesignDuet ("we," "our," "us"). By accessing or using our website and services, you agree to be bound by these Terms and Conditions. If you disagree with any part of the terms, then you may not access the service.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">2. Services Offered</h2>
+                    <p>DesignDuet provides a range of creative design services, including but not limited to:</p>
+                    <ul class="list-disc list-inside space-y-2 ml-4">
+                        <li>Graphic Design (Logo & Brand Identity, Print & Digital Design, Marketing Materials)</li>
+                        <li>Interior Design (Residential Design, Commercial Spaces, 3D Visualization)</li>
+                        <li>Digital Design (Web Design & UI/UX, Social Media Graphics, Digital Marketing Assets)</li>
+                        <li>Design Consultation</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">3. User Obligations</h2>
+                    <ul class="list-disc list-inside space-y-2 ml-4">
+                        <li>You agree to provide accurate and complete information when using our contact or consultation forms.</li>
+                        <li>You agree not to use our website or services for any unlawful purpose or in any way that could damage, disable, or impair our website.</li>
+                        <li>You agree to respect the intellectual property rights of DesignDuet and third parties.</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">4. Intellectual Property</h2>
+                    <p>All content on this website, including text, graphics, logos, images, and software, is the property of DesignDuet or its content suppliers and protected by international copyright laws. The "DesignDuet" brand logo and name are trademarks of DesignDuet.</p>
+                    <p>Upon completion and full payment for design projects, the intellectual property rights for the specific designs created for you will typically transfer to you, as detailed in your specific project agreement.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">5. Disclaimers</h2>
+                    <p>Our services and website are provided on an "as is" and "as available" basis. DesignDuet makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">6. Limitation of Liability</h2>
+                    <p>In no event shall DesignDuet or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on DesignDuet's website, even if DesignDuet or a DesignDuet authorized representative has been notified orally or in writing of the possibility of such damage. Because some jurisdictions do not allow limitations on implied warranties, or limitations of liability for consequential or incidental damages, these limitations may not apply to you.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">7. Governing Law</h2>
+                    <p>These terms and conditions are governed by and construed in accordance with the laws of India, and you irrevocably submit to the exclusive jurisdiction of the courts in that State or location.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">8. Changes to Terms and Conditions</h2>
+                    <p>We reserve the right, at our sole discretion, to modify or replace these Terms and Conditions at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">9. Contact Us</h2>
+                    <p>If you have any questions about these Terms and Conditions, please contact us:</p>
+                    <ul class="list-disc list-inside space-y-2 ml-4">
+                        <li>By email: <a href="mailto:info@designduet.in" class="text-primary hover:underline">info@designduet.in</a></li>
+                        <li>By phone: <a href="tel:+91-9310412672" class="text-primary hover:underline">+91-9310412672</a></li>
+                        <li>By visiting this page on our website: <a href="index.html#contact" class="text-primary hover:underline">DesignDuet Contact</a></li>
+                    </ul>
+                </div>
+                <p class="text-sm text-gray-500 italic mt-8">These Terms and Conditions were last updated on July 15, 2025.</p>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-6">
+                        <span class="text-3xl font-pacifico text-white">DesignDuet</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 max-w-md leading-relaxed">
+                        We're passionate about creating exceptional designs that tell your story and bring your vision
+                        to life. Let's create something amazing together.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-facebook-fill"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-twitter-fill"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-instagram-fill"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="ri-linkedin-fill"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Services</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html#services" class="hover:text-white transition-colors duration-300">Graphic Design</a></li>
+                        <li><a href="index.html#services" class="hover:text-white transition-colors duration-300">Interior Design</a></li>
+                        <li><a href="index.html#services" class="hover:text-white transition-colors duration-300">Digital Design</a></li>
+                        <li><a href="index.html#services" class="hover:text-white transition-colors duration-300">Brand Identity</a></li>
+                        <li><a href="index.html#services" class="hover:text-white transition-colors duration-300">Consultation</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html#home" class="hover:text-white transition-colors duration-300">Home</a></li>
+                        <li><a href="index.html#services" class="hover:text-white transition-colors duration-300">Services</a>
+                        </li>
+                        <li><a href="index.html#portfolio" class="hover:text-white transition-colors duration-300">Portfolio</a>
+                        </li>
+                        <li><a href="index.html#contact" class="hover:text-white transition-colors duration-300">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-300">About Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        © 2024 DesignDuet. All rights reserved.
+                    </p>
+                    <div class="flex space-x-6 mt-4 md:mt-0">
+                        <a href="privacy-policy.html"
+                            class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Privacy
+                            Policy</a>
+                        <a href="terms-conditions.html" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms
+                            of Service</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <button
+        class="scroll-to-top bg-gradient-to-r from-primary to-secondary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+        id="scrollToTop">
+        <i class="ri-arrow-up-line"></i>
+    </button>
+
+    <script id="header-scroll">
+        document.addEventListener('DOMContentLoaded', function () {
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 100) {
+                    header.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+                } else {
+                    header.classList.remove('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+                }
+            });
+        });
+    </script>
+    <script id="mobile-menu">
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', function () {
+                mobileMenu.classList.toggle('-translate-y-full');
+            });
+        });
+    </script>
+    <script id="scroll-to-top">
+        document.addEventListener('DOMContentLoaded', function () {
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 500) {
+                    scrollToTopBtn.classList.add('show');
+                } else {
+                    scrollToTopBtn.classList.remove('show');
+                }
+            });
+            scrollToTopBtn.addEventListener('click', function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    <script id="smooth-scroll">
+        document.addEventListener('DOMContentLoaded', function () {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        const offsetTop = targetSection.offsetTop - 80;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    <script id="mobile-sidebar-toggle">
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+            function openSidebar() {
+                mobileSidebar.classList.remove('translate-x-full');
+                mobileSidebar.classList.add('translate-x-0');
+                mobileMenuOverlay.classList.remove('hidden');
+            }
+
+            function closeSidebar() {
+                mobileSidebar.classList.remove('translate-x-0');
+                mobileSidebar.classList.add('translate-x-full');
+                mobileMenuOverlay.classList.add('hidden');
+            }
+
+            mobileMenuBtn.addEventListener('click', openSidebar);
+            mobileMenuOverlay.addEventListener('click', closeSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+
+            // Close sidebar when a menu item is clicked
+            const sidebarLinks = mobileSidebar.querySelectorAll('a[href^="#"]');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            });
+            const sidebarButton = mobileSidebar.querySelector('button');
+            if (sidebarButton) {
+                sidebarButton.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

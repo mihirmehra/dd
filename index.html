@@ -121,11 +121,12 @@
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <img class="brand-logo" src="assets/img/logo.png" alt="DesignDuet">
+                    <a href="/">
+                        <img class="brand-logo" src="assets/img/logo.png" alt="DesignDuet">
+                    </a>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#home"
-                        class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
+                    <a href="#home" class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
                         Home
                         <span
                             class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -148,7 +149,7 @@
                         <span
                             class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                     </a>
-                    <button onclick="openModal()"
+                    <button onclick="window.location.href='#contact'"
                         class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 !rounded-button hover:shadow-lg transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
                         Get Started
                     </button>
@@ -161,20 +162,29 @@
                 </button>
             </div>
         </nav>
-        <div class="md:hidden bg-white shadow-lg transform -translate-y-full transition-transform duration-300"
-            id="mobile-menu">
-            <div class="px-4 py-6 space-y-4">
-                <a href="#home" class="block text-gray-700 hover:text-primary transition-colors duration-300">Home</a>
-                <a href="#services"
-                    class="block text-gray-700 hover:text-primary transition-colors duration-300">Services</a>
-                <a href="#portfolio"
-                    class="block text-gray-700 hover:text-primary transition-colors duration-300">Portfolio</a>
-                <a href="#contact"
-                    class="block text-gray-700 hover:text-primary transition-colors duration-300">Contact</a>
-                <button onclick="openModal()"
-                    class="w-full bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 !rounded-button hover:shadow-lg transition-all duration-300 whitespace-nowrap">
-                    Get Started
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="mobile-menu-overlay"></div>
+        <div class="fixed top-0 right-0 w-64 h-full bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50 md:hidden"
+            id="mobile-sidebar">
+            <div class="px-6 py-8 space-y-6">
+                <button class="absolute top-4 left-4 text-gray-700 hover:text-primary transition-colors duration-300"
+                    id="close-sidebar-btn">
+                    <i class="ri-close-line ri-xl"></i>
                 </button>
+                <div class="mt-10 space-y-4">
+                    <a href="#home"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Home</a>
+                    <a href="#services"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Services</a>
+                    <a href="#portfolio"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Portfolio</a>
+                    <a href="#contact"
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Contact</a>
+                    <button onclick="window.location.href='#contact'"
+                        class="w-full bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 !rounded-button hover:shadow-lg transition-all duration-300 whitespace-nowrap text-lg">
+                        Get Started
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -797,13 +807,11 @@
                         © 2024 DesignDuet. All rights reserved.
                     </p>
                     <div class="flex space-x-6 mt-4 md:mt-0">
-                        <a href="#"
+                        <a href="privacy-policy.html"
                             class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Privacy
                             Policy</a>
-                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms
+                        <a href="terms-conditions.html" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms
                             of Service</a>
-                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Cookie
-                            Policy</a>
                     </div>
                 </div>
             </div>
@@ -1014,6 +1022,44 @@
                     }
                 });
             });
+        });
+    </script>
+    <script id="mobile-sidebar-toggle">
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+            function openSidebar() {
+                mobileSidebar.classList.remove('translate-x-full');
+                mobileSidebar.classList.add('translate-x-0');
+                mobileMenuOverlay.classList.remove('hidden');
+            }
+
+            function closeSidebar() {
+                mobileSidebar.classList.remove('translate-x-0');
+                mobileSidebar.classList.add('translate-x-full');
+                mobileMenuOverlay.classList.add('hidden');
+            }
+
+            mobileMenuBtn.addEventListener('click', openSidebar);
+            mobileMenuOverlay.addEventListener('click', closeSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+
+            // Close sidebar when a menu item is clicked
+            const sidebarLinks = mobileSidebar.querySelectorAll('a[href^="#"]');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            });
+            const sidebarButton = mobileSidebar.querySelector('button');
+            if (sidebarButton) {
+                sidebarButton.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            }
         });
     </script>
 </body>
