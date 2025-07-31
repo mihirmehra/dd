@@ -1,53 +1,31 @@
-const fs = require('fs/promises');
 const path = require('path');
 const { IncomingForm } = require('formidable');
 const { v4: uuidv4 } = require('uuid');
-const cloudinary = require('cloudinary').v2; // Import Cloudinary SDK
-const streamifier = require('streamifier'); // To pipe buffer to Cloudinary
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
+const { Pool } = require('pg'); // Import PostgreSQL client library
 
 // --- Cloudinary Configuration ---
-// It's best practice to get these from environment variables on Vercel
-// You've provided them, so make sure they are set in your Vercel project settings
-// (under Project Settings -> Environment Variables)
-// For local development, you'd use a .env file and dotenv package.
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_SECRET_KEY,
-  secure: true // Use HTTPS URLs
+  secure: true
 });
 
-// We no longer need IMAGES_DIR for saving uploaded files permanently
-// const IMAGES_DIR = path.join(process.cwd(), 'assets', 'img'); // No longer used for saving uploads
-
-const DATA_FILE = path.join(process.cwd(), 'data', 'images.json');
-
-// Helper to read images data
-async function readImagesData() {
-    try {
-        const data = await fs.readFile(DATA_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        if (error.code === 'ENOENT') { // File not found, return empty array
-            console.warn('images.json not found, initializing with empty array.');
-            return [];
-        }
-        console.error('Error reading images data:', error);
-        throw new Error('Failed to read image data.');
-    }
-}
-
-// Helper to write images data
-async function writeImagesData(data) {
-    try {
-        // Ensure the data directory exists
-        await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-        await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    } catch (error) {
-        console.error('Error writing images data:', error);
-        throw new Error('Failed to write image data.');
-    }
-}
+// --- Supabase PostgreSQL Configuration ---
+// The connection string is provided via Vercel Environment Variables.
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // Use the environment variable set on Vercel
+  ssl: {
+    // This is often required for connecting to external databases like Supabase
+    // from Vercel's serverless environment, as Vercel's functions might not
+    // have the necessary root certificates by default.
+    // For production, you might want to use a more robust SSL configuration
+    // if your Supabase setup provides specific certificates.
+    rejectUnauthorized: false
+  }
+});
 
 // Helper function to upload buffer to Cloudinary
 function uploadToCloudinary(buffer, options) {
@@ -60,24 +38,105 @@ function uploadToCloudinary(buffer, options) {
     });
 }
 
+// --- Database Operations ---
+
+// Read images from the database
+async function readImagesFromDb() {
+    const client = await pool.connect();
+    try {
+        // Order by 'order' column first, then by 'uploadDate' (if 'order' is the same)
+        const result = await client.query('SELECT * FROM images ORDER BY "order" ASC, "uploadDate" ASC;');
+        return result.rows; // Returns an array of image objects
+    } finally {
+        client.release(); // Release the client back to the pool
+    }
+}
+
+// Insert a new image into the database
+async function insertImageToDb(image) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO images (id, filename, "cloudinaryPublicId", "imageUrl", "altText", category, "order", "uploadDate")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+        `;
+        const values = [
+            image.id,
+            image.filename,
+            image.cloudinaryPublicId,
+            image.imageUrl,
+            image.altText,
+            image.category,
+            image.order,
+            image.uploadDate
+        ];
+        await client.query(query, values);
+    } finally {
+        client.release();
+    }
+}
+
+// Update image metadata in the database
+async function updateImageInDb(id, updates) {
+    const client = await pool.connect();
+    try {
+        // Build the SET clause dynamically for flexibility
+        const setClauses = [];
+        const values = [];
+        let paramCounter = 1;
+
+        if (updates.altText !== undefined) {
+            setClauses.push(`"altText" = $${paramCounter++}`);
+            values.push(updates.altText);
+        }
+        if (updates.category !== undefined) {
+            setClauses.push(`category = $${paramCounter++}`);
+            values.push(updates.category);
+        }
+        if (updates.order !== undefined) {
+            setClauses.push(`"order" = $${paramCounter++}`);
+            values.push(updates.order);
+        }
+
+        if (setClauses.length === 0) {
+            return; // Nothing to update
+        }
+
+        values.push(id); // Add id as the last parameter for WHERE clause
+        const query = `UPDATE images SET ${setClauses.join(', ')} WHERE id = $${paramCounter};`;
+        await client.query(query, values);
+    } finally {
+        client.release();
+    }
+}
+
+
+// Delete an image from the database
+async function deleteImageFromDb(id) {
+    const client = await pool.connect();
+    try {
+        await client.query('DELETE FROM images WHERE id = $1;', [id]);
+    } finally {
+        client.release();
+    }
+}
+
+// Main serverless function handler
 module.exports = async (req, res) => {
     if (req.method === 'POST') { // Add Image (Upload)
         const form = new IncomingForm({
-            // formidable will still write to a temp directory, which is fine
-            // We just won't 'rename' it to assets/img permanently
-            maxFileSize: 20 * 1024 * 1024, // 20MB limit (Cloudinary's free tier has limits)
+            maxFileSize: 20 * 1024 * 1024, // 20MB limit
             multiples: false,
             allowEmptyFiles: false,
-            minFileSize: 1 // Ensure some file content
+            minFileSize: 1
         });
 
         form.parse(req, async (err, fields, files) => {
             if (err) {
                 console.error('Error parsing form (file upload issue):', err);
-                // More specific error messages for formidable errors
                 let message = 'Error uploading image.';
-                if (err.code === 1009) message = 'File size too large.'; // Max file size exceeded
-                if (err.code === 1001) message = 'No file received or file is empty.'; // No file or empty file
+                if (err.code === 1009) message = 'File size too large.';
+                if (err.code === 1001) message = 'No file received or file is empty.';
                 return res.status(400).json({ message, error: err.message });
             }
 
@@ -87,108 +146,100 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ message: 'No image file provided.' });
             }
 
-            // Read the temporary file into a buffer
             let fileBuffer;
             try {
-                fileBuffer = await fs.readFile(imageFile.filepath);
+                // `fs.readFile` is still needed here to read the temporary file created by formidable
+                fileBuffer = await require('fs/promises').readFile(imageFile.filepath);
             } catch (readErr) {
                 console.error('Error reading temporary file:', readErr);
                 return res.status(500).json({ message: 'Failed to read uploaded file.', error: readErr.message });
             }
 
-            // Extract metadata from form fields
             const altText = fields.altText && fields.altText[0] ? fields.altText[0] : '';
             const category = fields.category && fields.category[0] ? fields.category[0] : 'Uncategorized';
             const originalFilename = imageFile.originalFilename;
 
             try {
-                // Upload to Cloudinary
                 const cloudinaryUploadResult = await uploadToCloudinary(fileBuffer, {
-                    folder: 'portfolio_images', // Optional: Folder in your Cloudinary account
-                    public_id: `portfolio-${uuidv4()}-${path.parse(originalFilename).name}`, // Unique public ID
+                    folder: 'portfolio_images',
+                    public_id: `portfolio-${uuidv4()}-${path.parse(originalFilename).name}`,
                     resource_type: 'image',
-                    altText: altText // Cloudinary can store this as metadata, though we save it in JSON too
+                    altText: altText
                 });
 
                 // Clean up the temporary file created by formidable
-                await fs.unlink(imageFile.filepath).catch(unlinkErr => {
+                await require('fs/promises').unlink(imageFile.filepath).catch(unlinkErr => {
                     console.warn(`Could not delete temporary file ${imageFile.filepath}: ${unlinkErr.message}`);
                 });
 
-                const images = await readImagesData();
+                // Get current images to calculate the next 'order' value
+                const images = await readImagesFromDb();
                 const newId = uuidv4();
                 const newImage = {
                     id: newId,
-                    filename: originalFilename, // We can store the original name
-                    cloudinaryPublicId: cloudinaryUploadResult.public_id, // Store Cloudinary's public ID
-                    imageUrl: cloudinaryUploadResult.secure_url, // Store the secure URL
+                    filename: originalFilename,
+                    cloudinaryPublicId: cloudinaryUploadResult.public_id,
+                    imageUrl: cloudinaryUploadResult.secure_url,
                     altText: altText || originalFilename.split('.')[0].replace(/[-_]/g, ' '),
                     category: category,
                     order: images.length > 0 ? Math.max(...images.map(img => img.order || 0)) + 1 : 1,
                     uploadDate: new Date().toISOString()
                 };
-                images.push(newImage);
-                await writeImagesData(images);
+
+                await insertImageToDb(newImage); // Save to Supabase
 
                 res.status(201).json({ message: 'Image uploaded to Cloudinary and data saved successfully!', image: newImage });
 
-            } catch (uploadError) {
-                console.error('Error uploading to Cloudinary or saving data:', uploadError);
+            } catch (error) {
+                console.error('Error uploading to Cloudinary or saving to DB:', error);
                 // Attempt to clean up temp file if something went wrong after reading
-                await fs.unlink(imageFile.filepath).catch(() => {});
-                return res.status(500).json({ message: 'Failed to upload image or save data.', error: uploadError.message });
+                await require('fs/promises').unlink(imageFile.filepath).catch(() => {});
+                return res.status(500).json({ message: 'Failed to upload image or save data to database.', error: error.message });
             }
         });
 
     } else if (req.method === 'GET') { // View All Images
         try {
-            const images = await readImagesData();
-            // Sort by order first, then by uploadDate
-            images.sort((a, b) => (a.order || 0) - (b.order || 0) || new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
+            const images = await readImagesFromDb(); // Read from Supabase
             res.status(200).json(images);
         } catch (error) {
-            res.status(500).json({ message: 'Failed to retrieve images.', error: error.message });
+            console.error('Error retrieving images from DB:', error);
+            res.status(500).json({ message: 'Failed to retrieve images from database.', error: error.message });
         }
 
     } else if (req.method === 'PUT') { // Update Image Metadata & Reorder (combined for simplicity)
         try {
-            const updates = JSON.parse(req.body); // Can be a single object or an array for reorder
-            let images = await readImagesData();
-
-            if (Array.isArray(updates.updates)) { // Batch update for reordering
-                const updatedIds = new Set(updates.updates.map(u => u.id));
-                images = images.map(img => {
-                    const update = updates.updates.find(u => u.id === img.id);
-                    return update ? { ...img, order: update.order } : img;
-                });
-                // Sort immediately after reorder for consistency
-                images.sort((a, b) => (a.order || 0) - (b.order || 0) || new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
-                await writeImagesData(images);
-                res.status(200).json({ message: 'Image order updated successfully!', images });
-
+            const updates = JSON.parse(req.body);
+            // Handling reorder (array of updates)
+            if (Array.isArray(updates.updates)) {
+                const client = await pool.connect();
+                try {
+                    await client.query('BEGIN;'); // Start transaction for batch update
+                    for (const update of updates.updates) {
+                        await client.query('UPDATE images SET "order" = $1 WHERE id = $2;', [update.order, update.id]);
+                    }
+                    await client.query('COMMIT;'); // Commit transaction
+                    const updatedImages = await readImagesFromDb(); // Re-fetch sorted images
+                    res.status(200).json({ message: 'Image order updated successfully!', images: updatedImages });
+                } catch (txError) {
+                    await client.query('ROLLBACK;'); // Rollback on error
+                    throw txError;
+                } finally {
+                    client.release();
+                }
             } else { // Single image metadata update
-                const { id, altText, category } = updates; // No 'filename' or 'order' update here
+                const { id, altText, category } = updates;
                 if (!id) {
                     return res.status(400).json({ message: 'Image ID is required for update.' });
                 }
-
-                const index = images.findIndex(img => img.id === id);
-                if (index === -1) {
-                    return res.status(404).json({ message: 'Image not found.' });
-                }
-
-                if (altText !== undefined) images[index].altText = altText;
-                if (category !== undefined) images[index].category = category;
-                // Note: We don't allow filename or order change via this singular PUT.
-                // Order is handled by the batch PUT; filename would require Cloudinary API rename.
-
-                await writeImagesData(images);
-                res.status(200).json({ message: 'Image metadata updated successfully!', image: images[index] });
+                await updateImageInDb(id, { altText, category }); // Update in DB
+                // Optionally fetch the updated single image or all images again
+                const updatedImage = (await readImagesFromDb()).find(img => img.id === id); // Find it in the fetched list
+                res.status(200).json({ message: 'Image metadata updated successfully!', image: updatedImage });
             }
-
         } catch (error) {
-            console.error('Error updating/reordering images:', error);
-            res.status(500).json({ message: 'Failed to update/reorder images.', error: error.message });
+            console.error('Error updating/reordering images in DB:', error);
+            res.status(500).json({ message: 'Failed to update/reorder images in database.', error: error.message });
         }
 
     } else if (req.method === 'DELETE') { // Delete Image
@@ -198,32 +249,39 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ message: 'Image ID is required for deletion.' });
             }
 
-            let images = await readImagesData();
-            const imageToDelete = images.find(img => img.id === id);
+            const client = await pool.connect();
+            let imageToDelete;
+            try {
+                // Get image info before deleting from DB to get Cloudinary Public ID
+                const result = await client.query('SELECT "cloudinaryPublicId" FROM images WHERE id = $1;', [id]);
+                imageToDelete = result.rows[0];
 
-            if (!imageToDelete) {
-                return res.status(404).json({ message: 'Image not found.' });
+                if (!imageToDelete) {
+                    return res.status(404).json({ message: 'Image not found.' });
+                }
+            } finally {
+                client.release();
             }
 
+
             // Delete from Cloudinary
-            if (imageToDelete.cloudinaryPublicId) {
+            if (imageToDelete && imageToDelete.cloudinaryPublicId) {
                 try {
                     await cloudinary.uploader.destroy(imageToDelete.cloudinaryPublicId);
                     console.log(`Cloudinary image ${imageToDelete.cloudinaryPublicId} deleted.`);
                 } catch (cloudinaryError) {
                     console.warn(`Failed to delete image from Cloudinary (${imageToDelete.cloudinaryPublicId}): ${cloudinaryError.message}`);
-                    // Log the warning but don't stop the process, as data should still be removed
+                    // Log the warning but don't stop the process, as data should still be removed from DB
                 }
             }
 
-            const newImages = images.filter(img => img.id !== id);
-            await writeImagesData(newImages);
+            await deleteImageFromDb(id); // Delete from Supabase
 
             res.status(200).json({ message: 'Image deleted successfully!', id });
 
         } catch (error) {
-            console.error('Error deleting image:', error);
-            res.status(500).json({ message: 'Failed to delete image.', error: error.message });
+            console.error('Error deleting image from DB:', error);
+            res.status(500).json({ message: 'Failed to delete image from database.', error: error.message });
         }
 
     } else {
