@@ -36,11 +36,211 @@
                     fontFamily: {
                         'inter': ['Inter', 'sans-serif'],
                         'pacifico': ['Pacifico', 'serif']
-                    }
+                    },
+                    keyframes: {
+                        'fade-in': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        'slide-in-left': {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                        'slide-in-right': {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                        'zoom-in-bounce': {
+                            '0%': { transform: 'scale(0.5)', opacity: '0' },
+                            '50%': { transform: 'scale(1.05)', opacity: '1' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fade-in 0.8s ease-out forwards',
+                        'slide-in-left': 'slide-in-left 0.7s ease-out forwards',
+                        'slide-in-right': 'slide-in-right 0.7s ease-out forwards',
+                        'zoom-in-bounce': 'zoom-in-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
                 }
             }
         }
     </script>
+    <style>
+        .lightbox-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .lightbox-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: calc(90vh - 80px);
+            /* Adjust for controls/caption space */
+            object-fit: contain;
+            user-select: none;
+            cursor: grab;
+            /* Indicates draggable for panning */
+            transform: scale(1);
+            /* Initial zoom */
+            transition: transform 0.1s ease-out;
+            /* Smooth zoom transitions */
+            transform-origin: center center;
+            /* Zoom from center */
+        }
+
+        /* Panning cursor */
+        .lightbox-image.panning {
+            cursor: grabbing;
+        }
+
+        .lightbox-caption {
+            color: white;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .lightbox-control-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            user-select: none;
+            outline: none;
+        }
+
+        .lightbox-control-btn:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        .lightbox-close,
+        .lightbox-share {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            user-select: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lightbox-close {
+            top: 20px;
+            right: 20px;
+        }
+
+        .lightbox-share {
+            top: 20px;
+            right: 80px;
+        }
+
+        /* Adjust position for share button */
+
+        .lightbox-close:hover,
+        .lightbox-share:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .lightbox-control-btn {
+                padding: 10px 15px;
+                font-size: 2rem;
+            }
+
+            .lightbox-prev {
+                left: 10px;
+            }
+
+            .lightbox-next {
+                right: 10px;
+            }
+
+            .lightbox-close,
+            .lightbox-share {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 1rem;
+            }
+
+            .lightbox-share {
+                right: 70px;
+            }
+
+            .lightbox-caption {
+                font-size: 1rem;
+                margin-top: 10px;
+            }
+        }
+
+        /* For Masonry-like grid on home page */
+        .masonry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Adjust minmax as needed */
+            grid-auto-rows: minmax(200px, auto); /* Adjust row height as needed */
+            gap: 24px; /* Tailwind's gap-6 */
+        }
+        .masonry-item {
+            /* This ensures items take up minimum space while allowing content to define height */
+            /* No specific row-span/col-span here, letting the grid flow naturally */
+        }
+
+    </style>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
@@ -136,7 +336,7 @@
                         Services
                         <span
                             class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-                    </a> 
+                    </a>
                     <a href="portfolio-tabs.html"
                         class="text-gray-700 hover:text-primary transition-colors duration-300 relative group">
                         View Designs
@@ -177,7 +377,8 @@
                     <a href="#services"
                         class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Services</a>
                     <a href="portfolio-tabs.html"
-                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">View Designs</a>
+                        class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">View
+                        Designs</a>
                     <a href="#contact"
                         class="block text-gray-700 hover:text-primary transition-colors duration-300 text-lg font-medium">Contact</a>
                     <button onclick="window.location.href='#contact'"
@@ -210,7 +411,7 @@
                             class="bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 !rounded-button text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 whitespace-nowrap">
                             Start Your Project
                         </button>
-                        <button
+                        <button onclick="window.location.href='portfolio-tabs.html'"
                             class="border-2 border-primary text-primary px-8 py-4 !rounded-button text-lg font-semibold hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap">
                             View Portfolio
                         </button>
@@ -259,29 +460,23 @@
                         <i class="ri-computer-line text-white ri-2x"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Web Design Services</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">
-                        We help businesses build or improve websites to boost user experience, brand identity, and online results.
-                    </p>
+                    <p class="text-gray-600 mb-6 leading-relaxed"> We help businesses build or improve websites to boost
+                        user experience, brand identity, and online results. </p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Custom website layout and structure
+                            <i class="ri-check-line text-primary mr-2"></i> Custom website layout and structure
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Visual design and branding
+                            <i class="ri-check-line text-primary mr-2"></i> Visual design and branding
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Content creation & SEO fundamentals
+                            <i class="ri-check-line text-primary mr-2"></i> Content creation & SEO fundamentals
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Mobile and responsive design
+                            <i class="ri-check-line text-primary mr-2"></i> Mobile and responsive design
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            E-commerce setup & Site maintenance
+                            <i class="ri-check-line text-primary mr-2"></i> E-commerce setup & Site maintenance
                         </li>
                     </ul>
                 </div>
@@ -291,29 +486,23 @@
                         <i class="ri-palette-line text-white ri-2x"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Graphic Design Services</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">
-                        We create visual content to help businesses build strong brand identities and communicate effectively.
-                    </p>
+                    <p class="text-gray-600 mb-6 leading-relaxed"> We create visual content to help businesses build
+                        strong brand identities and communicate effectively. </p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Logo and brand design
+                            <i class="ri-check-line text-primary mr-2"></i> Logo and brand design
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Marketing materials (brochures, business cards, posters)
+                            <i class="ri-check-line text-primary mr-2"></i> Marketing materials (brochures, flyers)
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Social media and digital graphics
+                            <i class="ri-check-line text-primary mr-2"></i> Social media graphics & Infographics
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Website and app visuals
+                            <i class="ri-check-line text-primary mr-2"></i> UI/UX design for apps and software
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Packaging and print design, Infographics and presentations
+                            <i class="ri-check-line text-primary mr-2"></i> Custom illustrations & iconography
                         </li>
                     </ul>
                 </div>
@@ -323,31 +512,30 @@
                         <i class="ri-printer-line text-white ri-2x"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Printing Services</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">
-                        We focus on producing high-quality printed materials that help promote your brand and business effectively.
-                    </p>
+                    <p class="text-gray-600 mb-6 leading-relaxed"> We manage high-quality printing for all your design
+                        needs, ensuring vibrant results and timely delivery. </p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Brochure Printing (custom sizes, finishes, folding options)
+                            <i class="ri-check-line text-primary mr-2"></i> Business cards & Stationery
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Visiting Cards (premium paper, embossing, spot UV)
+                            <i class="ri-check-line text-primary mr-2"></i> Brochures, flyers, and posters
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Flyers Printing (various sizes, vibrant colors)
+                            <i class="ri-check-line text-primary mr-2"></i> Large format printing & Banners
                         </li>
                         <li class="flex items-center">
-                            <i class="ri-check-line text-primary mr-2"></i>
-                            Banners Printing (durable materials, indoor/outdoor use)
+                            <i class="ri-check-line text-primary mr-2"></i> Packaging design and printing
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ri-check-line text-primary mr-2"></i> Custom apparel and merchandise
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
     </section>
+
     <section id="portfolio" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
@@ -356,274 +544,21 @@
                     Explore our diverse collection of projects that showcase our expertise across various design
                     disciplines.
                 </p>
-                <div class="flex flex-wrap justify-center gap-4 mb-12">
-                    <button
-                        class="filter-btn active px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
-                        data-filter="all">
-                        All Projects
-                    </button>
-                    <button
-                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
-                        data-filter="web">
-                        Web Design
-                    </button>
-                    <button
-                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
-                        data-filter="graphic">
-                        Graphic Design
-                    </button>
-                    <button
-                        class="filter-btn px-6 py-3 !rounded-button border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap"
-                        data-filter="printing">
-                        Printing Design
-                    </button>
-                </div>
+                <div class="flex flex-wrap justify-center gap-4 mb-12" id="portfolioTabs">
+                    </div>
             </div>
             <div class="masonry-grid" id="portfolio-grid">
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-1.jpg" data-lightbox-alt="Brand Identity Design">
-                            <img src="assets/img/d-3.jpg"
-                                alt="Brand Identity Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-2.jpg" data-lightbox-alt="Modern Living Space">
-                            <img src="assets/img/d-2.jpg"
-                                alt="Modern Living Space"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-3.jpg" data-lightbox-alt="Website Design">
-                            <img src="assets/img/d-1.jpg"
-                                alt="Website Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-5.jpg" data-lightbox-alt="Office Interior">
-                            <img src="assets/img/d-5.jpg"
-                                alt="Office Interior"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-6.jpg" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-6.jpg"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-7.jpg" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-7.jpg"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-8.jpg" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-8.jpg"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-9.jpg" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-9.jpg"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-10.jpg" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-10.jpg"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-11.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-11.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="web">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-12.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-12.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-13.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-13.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-14.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-14.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-15.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-15.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-16.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-16.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-17.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-17.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-18.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-18.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-19.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-19.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-20.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-20.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-21.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-21.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-22.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-22.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-                <div class="masonry-item portfolio-item" data-category="graphic">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                        <div class="relative overflow-hidden cursor-pointer"
-                            data-lightbox-src="assets/img/d-10.png" data-lightbox-alt="Mobile App Design">
-                            <img src="assets/img/d-10.png"
-                                alt="Mobile App Design"
-                                class="w-full h-auto object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
+                <p class="col-span-full text-center py-10 text-lg text-gray-600">Loading portfolio...</p>
+            </div>
+            <div class="text-center mt-12">
+                <a href="portfolio-tabs.html"
+                    class="inline-block bg-gradient-to-r from-primary to-secondary text-white px-10 py-4 !rounded-button text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                    View All Designs
+                </a>
             </div>
         </div>
     </section>
 
-    <div id="lightbox"
-        class="fixed inset-0 bg-black bg-opacity-90 z-[100] hidden flex items-center justify-center p-4">
-        <button class="absolute top-4 right-4 text-white text-3xl z-50" id="lightbox-close-btn">
-            <i class="ri-close-line"></i>
-        </button>
-        <div class="relative w-full h-full flex items-center justify-center">
-            <img id="lightbox-img" src="" alt="Portfolio Image"
-                class="max-w-full max-h-[90vh] object-contain transition-transform duration-300 transform scale-95 opacity-0">
-            <button
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/40 rounded-full p-3 transition-colors duration-300 z-10"
-                id="lightbox-prev-btn">
-                <i class="ri-arrow-left-s-line ri-2x"></i>
-            </button>
-            <button
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/40 rounded-full p-3 transition-colors duration-300 z-10"
-                id="lightbox-next-btn">
-                <i class="ri-arrow-right-s-line ri-2x"></i>
-            </button>
-        </div>
-    </div>
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
@@ -676,6 +611,7 @@
             </div>
         </div>
     </section>
+
     <section id="contact" class="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-16 items-start">
@@ -844,448 +780,535 @@
             </div>
         </div>
     </section>
-    <footer class="bg-gray-900 text-white py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-8 mb-12">
-                <div class="md:col-span-2">
-                    <div class="flex items-center mb-6">
-                        <a href="/">
-                            <img class="brand-logo" src="assets/img/logo-w.png" alt="DesignDuet">
-                        </a>
-                    </div>
-                    <p class="text-gray-400 mb-6 max-w-md leading-relaxed">
-                        We're passionate about creating exceptional designs that tell your story and bring your vision
-                        to life. Let's create something amazing together.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="https://www.facebook.com/share/1GS9a7ENi4/"
-                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
-                            <i class="ri-facebook-fill"></i>
-                        </a>
-                        <a href="https://www.instagram.com/designduet01?igsh=MTNsMjcwMXAzM3hpaQ=="
-                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
-                            <i class="ri-instagram-fill"></i>
-                        </a>
-                        <a href="https://www.linkedin.com/company/designduet/posts/?feedView=all"
-                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
-                            <i class="ri-linkedin-fill"></i>
-                        </a>
-                        <a href="https://ar.pinterest.com/designduet01/"
-                            class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors duration-300">
-                            <i class="ri-pinterest-fill"></i>
-                        </a>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Services</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Web Design</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Graphic Design</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Printing Design</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Brand Identity</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">Consultation</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#home" class="hover:text-white transition-colors duration-300">Home</a></li>
-                        <li><a href="#services" class="hover:text-white transition-colors duration-300">Services</a>
-                        </li>
-                        <li><a href="portfolio-tabs.html" class="hover:text-white transition-colors duration-300">View Designs</a>
-                        </li>
-                        <li><a href="#contact" class="hover:text-white transition-colors duration-300">Contact</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-300">About Us</a></li>
-                    </ul>
-                </div>
+
+    <footer class="bg-gray-900 text-white py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="flex items-center mb-6">
+                <a href="/">
+                    <img class="brand-logo" src="assets/img/logo-w.png" alt="DesignDuet">
+                </a>
             </div>
-            <div class="border-t border-gray-800 pt-8">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <p class="text-gray-400 text-sm">
-                        © 2024 DesignDuet. All rights reserved.
-                    </p>
-                    <div class="flex space-x-6 mt-4 md:mt-0">
-                        <a href="privacy-policy.html"
-                            class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Privacy
-                            Policy</a>
-                        <a href="terms-conditions.html" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms
-                            of Service</a>
-                    </div>
+            <div>
+                <p class="text-gray-400 text-sm">Crafting digital experiences that captivate and convert. Your vision,
+                    our expertise, a masterpiece achieved.</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
+                <ul class="space-y-2">
+                    <li><a href="#home" class="text-gray-400 hover:text-primary transition-colors">Home</a></li>
+                    <li><a href="#services" class="text-gray-400 hover:text-primary transition-colors">Services</a></li>
+                    <li><a href="portfolio-tabs.html"
+                            class="text-gray-400 hover:text-primary transition-colors">Portfolio</a></li>
+                    <li><a href="#contact" class="text-gray-400 hover:text-primary transition-colors">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-4">Contact Us</h3>
+                <p class="text-gray-400 text-sm">
+                    123 Design St, Creative City, CA 90210<br>
+                    Email: info@designduet.com<br>
+                    Phone: (123) 456-7890
+                </p>
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i
+                            class="ri-facebook-fill"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i
+                            class="ri-twitter-fill"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i
+                            class="ri-instagram-fill"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i
+                            class="ri-linkedin-fill"></i></a>
                 </div>
             </div>
         </div>
+        <div class="text-center text-gray-500 text-sm mt-10 border-t border-gray-800 pt-6">
+            &copy; 2024 DesignDuet. All rights reserved.
+        </div>
     </footer>
-    <button
-        class="scroll-to-top bg-gradient-to-r from-primary to-secondary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
-        id="scrollToTop">
-        <i class="ri-arrow-up-line"></i>
-    </button>
-    <script id="header-scroll">
-        document.addEventListener('DOMContentLoaded', function () {
-            const header = document.getElementById('header');
-            window.addEventListener('scroll', function () {
-                if (window.scrollY > 100) {
-                    header.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
-                } else {
-                    header.classList.remove('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
-                }
-            });
-        });
-    </script>
-    <script id="mobile-sidebar-toggle">
-        document.addEventListener('DOMContentLoaded', function () {
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileSidebar = document.getElementById('mobile-sidebar');
-            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
 
-            function openSidebar() {
-                mobileSidebar.classList.remove('translate-x-full');
-                mobileSidebar.classList.add('translate-x-0');
-                mobileMenuOverlay.classList.remove('hidden');
-            }
+    <div id="lightbox" class="lightbox-container hidden">
+        <div class="lightbox-content">
+            <img id="lightboxImage" class="lightbox-image animate-zoom-in-bounce" src="" alt="Portfolio Image">
+            <p id="lightboxCaption" class="lightbox-caption"></p>
+        </div>
 
-            function closeSidebar() {
-                mobileSidebar.classList.remove('translate-x-0');
-                mobileSidebar.classList.add('translate-x-full');
-                mobileMenuOverlay.classList.add('hidden');
-            }
+        <button id="lightboxClose" class="lightbox-close">
+            <i class="ri-close-line"></i> Close
+        </button>
+        <button id="lightboxShare" class="lightbox-share">
+            <i class="ri-share-line"></i> Share
+        </button>
+        <button id="lightboxPrev" class="lightbox-control-btn lightbox-prev">
+            <i class="ri-arrow-left-s-line"></i>
+        </button>
+        <button id="lightboxNext" class="lightbox-control-btn lightbox-next">
+            <i class="ri-arrow-right-s-line"></i>
+        </button>
+    </div>
 
-            mobileMenuBtn.addEventListener('click', openSidebar);
-            mobileMenuOverlay.addEventListener('click', closeSidebar);
-            closeSidebarBtn.addEventListener('click', closeSidebar);
-
-            // Close sidebar when a menu item is clicked
-            const sidebarLinks = mobileSidebar.querySelectorAll('a[href^="#"]');
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    closeSidebar();
-                });
-            });
-            const sidebarButton = mobileSidebar.querySelector('button');
-            if (sidebarButton) {
-                sidebarButton.addEventListener('click', function() {
-                    closeSidebar();
-                });
-            }
-        });
-    </script>
-    <script id="portfolio-filter">
-        document.addEventListener('DOMContentLoaded', function () {
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            const portfolioGrid = document.getElementById('portfolio-grid');
-            let allPortfolioItems = Array.from(document.querySelectorAll('.portfolio-item')); // Get all items once
-
-            function applyFilter(filter) {
-                allPortfolioItems.forEach(item => {
-                    if (filter === 'all' || item.getAttribute('data-category') === filter) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            }
-
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const filter = this.getAttribute('data-filter');
-                    filterBtns.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    applyFilter(filter);
-                });
-            });
-
-            // Initial filter application
-            applyFilter('all');
-        });
-    </script>
-    <script id="contact-form-logic">
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('contact-form');
-            const successMessage = document.getElementById('success-message');
-            const errorMessage = document.getElementById('error-message');
-            const errorText = document.getElementById('error-text');
-            const checkboxes = document.querySelectorAll('#contact-form input[type="checkbox"]');
-
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
-                    const customBox = this.parentElement.querySelector('.checkbox-custom');
-                    const icon = this.parentElement.querySelector('.checkbox-icon');
-                    if (this.checked) {
-                        customBox.classList.add('bg-primary', 'border-primary');
-                        icon.classList.remove('opacity-0');
-                    } else {
-                        customBox.classList.remove('bg-primary', 'border-primary');
-                        icon.classList.add('opacity-0');
-                    }
-                });
-            });
-
-            form.addEventListener('submit', async function (e) {
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-
-                const formData = new FormData(form);
-                const data = {};
-                for (let [key, value] of formData.entries()) {
-                    // Handle multiple values for checkboxes (if present)
-                    if (key.endsWith('[]')) {
-                        if (!data[key]) {
-                            data[key] = [];
-                        }
-                        data[key].push(value);
-                    } else {
-                        data[key] = value;
-                    }
-                }
-
-                try {
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json' // Send as JSON
-                        },
-                        body: JSON.stringify(data) // Stringify the data
-                    });
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        form.reset(); // Clear the form
-                        checkboxes.forEach(checkbox => { // Uncheck and reset styling of checkboxes
-                            checkbox.checked = false;
-                            const customBox = checkbox.parentElement.querySelector('.checkbox-custom');
-                            const icon = checkbox.parentElement.querySelector('.checkbox-icon');
-                            customBox.classList.remove('bg-primary', 'border-primary');
-                            icon.classList.add('opacity-0');
-                        });
-                        form.style.display = 'none';
-                        successMessage.classList.remove('hidden');
-                        errorMessage.classList.add('hidden');
-                    } else {
-                        errorText.textContent = result.message;
-                        errorMessage.classList.remove('hidden');
-                        successMessage.classList.add('hidden');
-                    }
-                } catch (error) {
-                    console.error('Submission error:', error);
-                    errorText.textContent = 'Network error or server unreachable. Please try again.';
-                    errorMessage.classList.remove('hidden');
-                    successMessage.classList.add('hidden');
-                }
-            });
-        });
-    </script>
-    <script id="scroll-to-top">
-        document.addEventListener('DOMContentLoaded', function () {
-            const scrollToTopBtn = document.getElementById('scrollToTop');
-            window.addEventListener('scroll', function () {
-                if (window.scrollY > 500) {
-                    scrollToTopBtn.classList.add('show');
-                } else {
-                    scrollToTopBtn.classList.remove('show');
-                }
-            });
-            scrollToTopBtn.addEventListener('click', function () {
-                window.scrollTo({
-                    top: 0,
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
                     behavior: 'smooth'
                 });
             });
         });
-    </script>
-    <script id="lead-modal-logic">
-        document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById('leadModal');
-            const modalContent = document.getElementById('modalContent');
-            const leadForm = document.getElementById('leadForm');
-            const leadSuccessMessage = document.getElementById('leadSuccessMessage');
-            const leadErrorMessage = document.getElementById('leadErrorMessage');
-            const leadErrorText = document.getElementById('leadErrorText');
 
-            window.openModal = function () {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                setTimeout(() => {
-                    modalContent.classList.remove('scale-95', 'opacity-0');
-                    modalContent.classList.add('scale-100', 'opacity-100');
-                }, 50);
+        // Header scroll effect
+        window.addEventListener('scroll', function () {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('bg-white', 'shadow-md');
+            } else {
+                header.classList.remove('bg-white', 'shadow-md');
             }
-            window.closeModal = function () {
-                modalContent.classList.remove('scale-100', 'opacity-100');
-                modalContent.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    modal.classList.remove('flex');
-                    modal.classList.add('hidden');
-                    leadForm.reset(); // Always reset form on close
-                    leadForm.style.display = 'block'; // Ensure form is visible
-                    leadSuccessMessage.classList.add('hidden'); // Hide success message
-                    leadErrorMessage.classList.add('hidden'); // Hide error message
-                }, 300);
-            }
-            modal.addEventListener('click', function (e) {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
-
-            leadForm.addEventListener('submit', async function (e) {
-                e.preventDefault();
-
-                const formData = new FormData(leadForm);
-                const data = {};
-                for (let [key, value] of formData.entries()) {
-                    data[key] = value;
-                }
-
-                try {
-                    const response = await fetch(leadForm.action, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json' // Send as JSON
-                        },
-                        body: JSON.stringify(data) // Stringify the data
-                    });
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        leadForm.style.display = 'none';
-                        leadSuccessMessage.classList.remove('hidden');
-                        leadErrorMessage.classList.add('hidden');
-                        setTimeout(() => {
-                            closeModal();
-                        }, 2000); // Close modal after 2 seconds
-                    } else {
-                        leadErrorText.textContent = result.message;
-                        leadErrorMessage.classList.remove('hidden');
-                        leadSuccessMessage.classList.add('hidden');
-                    }
-                } catch (error) {
-                    console.error('Submission error:', error);
-                    leadErrorText.textContent = 'Network error or server unreachable. Please try again.';
-                    leadErrorMessage.classList.remove('hidden');
-                    leadSuccessMessage.classList.add('hidden');
-                }
-            });
         });
-    </script>
-    <script id="smooth-scroll">
-        document.addEventListener('DOMContentLoaded', function () {
-            const links = document.querySelectorAll('a[href^="#"]');
-            links.forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    const targetSection = document.querySelector(targetId);
-                    if (targetSection) {
-                        const offsetTop = targetSection.offsetTop - 80;
-                        window.scrollTo({
-                            top: offsetTop,
-                            behavior: 'smooth'
-                        });
-                    }
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+        function openMobileMenu() {
+            mobileSidebar.classList.remove('translate-x-full');
+            mobileMenuOverlay.classList.remove('hidden');
+        }
+
+        function closeMobileMenu() {
+            mobileSidebar.classList.add('translate-x-full');
+            mobileMenuOverlay.classList.add('hidden');
+        }
+
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        closeSidebarBtn.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu); // Close when clicking overlay
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#mobile-sidebar a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
+        // Lead Modal functionality
+        const leadModal = document.getElementById('leadModal');
+        const modalContent = document.getElementById('modalContent');
+        const leadForm = document.getElementById('leadForm');
+        const leadSuccessMessage = document.getElementById('leadSuccessMessage');
+        const leadErrorMessage = document.getElementById('leadErrorMessage');
+        const leadErrorText = document.getElementById('leadErrorText');
+
+        function openModal() {
+            leadModal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+            leadForm.reset();
+            leadSuccessMessage.classList.add('hidden');
+            leadErrorMessage.classList.add('hidden');
+            leadForm.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                leadModal.classList.add('hidden');
+            }, 300);
+        }
+
+        leadModal.addEventListener('click', (e) => {
+            if (e.target === leadModal) {
+                closeModal();
+            }
+        });
+
+        leadForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(leadForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(leadForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
                 });
-            });
+
+                if (response.ok) {
+                    leadForm.classList.add('hidden');
+                    leadSuccessMessage.classList.remove('hidden');
+                } else {
+                    const errorData = await response.json();
+                    leadErrorText.textContent = errorData.message || 'Something went wrong. Please try again.';
+                    leadForm.classList.add('hidden');
+                    leadErrorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                leadErrorText.textContent = 'Network error or server unavailable.';
+                leadForm.classList.add('hidden');
+                leadErrorMessage.classList.remove('hidden');
+            }
         });
-    </script>
-    <script id="lightbox-script">
-        document.addEventListener('DOMContentLoaded', function () {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightbox-img');
-            const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
-            const lightboxPrevBtn = document.getElementById('lightbox-prev-btn');
-            const lightboxNextBtn = document.getElementById('lightbox-next-btn');
-            const portfolioGrid = document.getElementById('portfolio-grid');
 
-            let currentImages = [];
-            let currentIndex = 0;
+        const contactForm = document.getElementById('contactForm');
+        const contactSuccessMessage = document.getElementById('contactSuccessMessage');
+        const contactErrorMessage = document.getElementById('contactErrorMessage');
+        const contactErrorText = document.getElementById('contactErrorText');
 
-            function updateCurrentImages() {
-                // Get only currently visible images based on active filter
-                const activeFilterBtn = document.querySelector('.filter-btn.active');
-                const filter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData.entries());
 
-                currentImages = Array.from(portfolioGrid.querySelectorAll('.portfolio-item'))
-                                .filter(item => {
-                                    const itemCategory = item.getAttribute('data-category');
-                                    return filter === 'all' || itemCategory === filter;
-                                })
-                                .map(item => item.querySelector('[data-lightbox-src]'));
+            try {
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    contactForm.classList.add('hidden');
+                    contactSuccessMessage.classList.remove('hidden');
+                } else {
+                    const errorData = await response.json();
+                    contactErrorText.textContent = errorData.message || 'Something went wrong. Please try again.';
+                    contactForm.classList.add('hidden');
+                    contactErrorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                contactErrorText.textContent = 'Network error or server unavailable.';
+                contactForm.classList.add('hidden');
+                contactErrorMessage.classList.remove('hidden');
             }
+        });
 
-            function openLightbox(src, index) {
-                lightboxImg.src = src;
-                currentIndex = index;
-                lightbox.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden'); // Prevent scrolling body
-                setTimeout(() => {
-                    lightboxImg.classList.remove('scale-95', 'opacity-0');
-                    lightboxImg.classList.add('scale-100', 'opacity-100');
-                }, 50);
+        // --- Portfolio & Lightbox Integration for index.html ---
+        const portfolioTabs = document.getElementById('portfolioTabs');
+        const portfolioGrid = document.getElementById('portfolio-grid'); // Changed from portfolioGrid to portfolio-grid as per HTML
+
+        // Lightbox elements
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        const lightboxCloseBtn = document.getElementById('lightboxClose');
+        const lightboxPrevBtn = document.getElementById('lightboxPrev');
+        const lightboxNextBtn = document.getElementById('lightboxNext');
+        const lightboxShareBtn = document.getElementById('lightboxShare'); // Share button
+
+        let allImages = []; // Stores all fetched images
+        let currentActiveCategory = 'All';
+        let currentDisplayedImages = []; // Images currently shown in the grid (max 9 for index page)
+        let currentImageIndex = 0; // Index of the image currently in the lightbox
+
+        // Zoom and Pan variables
+        let currentZoom = 1;
+        let isPanning = false;
+        let startX, startY, imgX = 0, imgY = 0;
+
+        // Ensure this list aligns with your backend categories
+        const FIXED_CATEGORIES = ["Web Designs", "Graphic Designs", "Printing Designs", "3D Designs"];
+        const IMAGE_LIMIT_HOME_PAGE = 9; // Limit for the home page portfolio section
+
+        async function fetchAndRenderImages() {
+            try {
+                const response = await fetch('/api/images');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                allImages = await response.json();
+
+                // Sort images by their 'order' property for consistent display
+                allImages.sort((a, b) => (a.order || 0) - (b.order || 0) || new Date(a.uploadDate) - new Date(b.uploadDate));
+
+                renderTabs(allImages);
+                displayImagesForCategory(currentActiveCategory); // Initial display
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                portfolioGrid.innerHTML = `<p class="col-span-full text-center py-10 text-lg text-red-500">Failed to load portfolio images: ${error.message}</p>`;
             }
+        }
 
-            function closeLightbox() {
-                lightboxImg.classList.remove('scale-100', 'opacity-100');
-                lightboxImg.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    lightbox.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                }, 300);
+        function renderTabs(images) {
+            // Determine unique categories, adding 'All' and 'Uncategorized' as needed
+            const categories = new Set(FIXED_CATEGORIES);
+            images.forEach(img => {
+                if (img.category && !FIXED_CATEGORIES.includes(img.category)) {
+                    categories.add(img.category);
+                } else if (!img.category) {
+                    categories.add('Uncategorized');
+                }
+            });
+            const categoriesToDisplay = ['All', ...Array.from(categories).sort()];
+
+            portfolioTabs.innerHTML = '';
+            categoriesToDisplay.forEach(category => {
+                const button = document.createElement('button');
+                button.classList.add(
+                    'filter-btn',
+                    'px-6', 'py-3', '!rounded-button', 'border-2', 'border-primary',
+                    'text-primary', 'hover:bg-primary', 'hover:text-white',
+                    'transition-all', 'duration-300', 'whitespace-nowrap'
+                );
+                button.dataset.filter = category === 'All' ? 'all' : category.toLowerCase().replace(/\s/g, ''); // Convert category to suitable filter name
+                button.textContent = category === 'Uncategorized' ? 'Other' : category; // Display "Other" for Uncategorized
+                button.addEventListener('click', () => switchTab(category));
+                portfolioTabs.appendChild(button);
+            });
+
+            // Set 'All' tab as active by default or whichever is current
+            const activeBtn = portfolioTabs.querySelector(`[data-filter="${currentActiveCategory === 'All' ? 'all' : currentActiveCategory.toLowerCase().replace(/\s/g, '')}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-primary', '!text-white');
+                activeBtn.classList.remove('text-primary'); // Remove text-primary when active
+            } else { // Fallback if currentActiveCategory doesn't match a button (e.g., initial load)
+                portfolioTabs.querySelector('[data-filter="all"]').classList.add('active', 'bg-primary', '!text-white');
+                portfolioTabs.querySelector('[data-filter="all"]').classList.remove('text-primary');
+                currentActiveCategory = 'All';
             }
+        }
 
-            function showNextImage() {
-                currentIndex = (currentIndex + 1) % currentImages.length;
-                lightboxImg.src = currentImages[currentIndex].getAttribute('data-lightbox-src');
-            }
+        function displayImagesForCategory(selectedCategory) {
+            portfolioGrid.innerHTML = ''; // Clear previous images
 
-            function showPrevImage() {
-                currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
-                lightboxImg.src = currentImages[currentIndex].getAttribute('data-lightbox-src');
-            }
-
-            // Event listener for portfolio items
-            portfolioGrid.addEventListener('click', function (e) {
-                const clickedElement = e.target.closest('[data-lightbox-src]');
-                if (clickedElement) {
-                    updateCurrentImages(); // Update currentImages based on active filter
-                    const src = clickedElement.getAttribute('data-lightbox-src');
-                    const index = currentImages.indexOf(clickedElement);
-                    openLightbox(src, index);
+            let filteredImages = allImages.filter(img => {
+                const imgCategory = img.category || 'Uncategorized';
+                if (selectedCategory === 'All') {
+                    return true;
+                } else if (selectedCategory === 'Uncategorized') {
+                    return !img.category || img.category === 'Uncategorized';
+                } else {
+                    return imgCategory === selectedCategory;
                 }
             });
 
-            // Event listeners for lightbox controls
-            lightboxCloseBtn.addEventListener('click', closeLightbox);
-            lightboxPrevBtn.addEventListener('click', showPrevImage);
-            lightboxNextBtn.addEventListener('click', showNextImage);
+            // Limit to IMAGE_LIMIT_HOME_PAGE for the home page
+            currentDisplayedImages = filteredImages.slice(0, IMAGE_LIMIT_HOME_PAGE);
 
-            // Close lightbox when clicking outside the image
-            lightbox.addEventListener('click', function (e) {
-                if (e.target === lightbox) {
+            if (currentDisplayedImages.length === 0) {
+                portfolioGrid.innerHTML = `<p class="col-span-full text-center py-10 text-lg text-gray-600">No portfolio items found in the '${selectedCategory === 'Uncategorized' ? 'Other' : selectedCategory}' category.</p>`;
+                return;
+            }
+
+            currentDisplayedImages.forEach((image, index) => {
+                const portfolioItem = document.createElement('div');
+                portfolioItem.classList.add(
+                    'masonry-item',
+                    'portfolio-item',
+                    'relative', 'overflow-hidden', 'rounded-2xl', 'shadow-lg', 'group',
+                    'cursor-pointer'
+                );
+                // No animate-fade-in here to prevent re-animation on filter
+                portfolioItem.dataset.index = index; // Store index for lightbox
+
+                const innerDiv = document.createElement('div');
+                innerDiv.classList.add('bg-white', 'rounded-2xl', 'overflow-hidden', 'shadow-lg', 'group');
+
+                const imgContainer = document.createElement('div');
+                imgContainer.classList.add(
+                    'relative', 'overflow-hidden', 'cursor-pointer'
+                );
+
+                const imgElement = document.createElement('img');
+                imgElement.src = image.imageUrl;
+                imgElement.alt = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ');
+                imgElement.classList.add(
+                    'w-full', 'h-auto', 'object-cover', 'object-top', // Ensure object-top is for masonry effect
+                    'group-hover:scale-110', 'transition-transform', 'duration-500'
+                );
+
+                // No infoDiv for the main page, keep it simpler as per original design
+                imgContainer.appendChild(imgElement);
+                innerDiv.appendChild(imgContainer);
+                portfolioItem.appendChild(innerDiv);
+                portfolioGrid.appendChild(portfolioItem);
+
+                // Add click listener to open lightbox
+                portfolioItem.addEventListener('click', () => openLightbox(index));
+            });
+        }
+
+        function switchTab(category) {
+            currentActiveCategory = category;
+            // Remove active class from all buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', '!text-white');
+                btn.classList.add('text-primary'); // Add text-primary back when not active
+            });
+            // Add active class to the clicked button
+            const activeBtn = portfolioTabs.querySelector(`[data-filter="${category === 'All' ? 'all' : category.toLowerCase().replace(/\s/g, '')}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-primary');
+                activeBtn.classList.add('active', 'bg-primary', '!text-white');
+            }
+            displayImagesForCategory(category);
+        }
+
+        // --- Lightbox Functions ---
+        function openLightbox(index) {
+            currentImageIndex = index;
+            updateLightboxContent();
+            lightbox.classList.add('active'); // Use 'active' class for opacity/visibility transition
+            lightbox.classList.remove('hidden'); // Ensure it's not 'display: none'
+            resetZoomAndPan();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            // Give time for transition before hiding completely
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+            }, 300);
+            resetZoomAndPan();
+        }
+
+        function updateLightboxContent() {
+            const image = currentDisplayedImages[currentImageIndex];
+            if (image) {
+                lightboxImage.src = image.imageUrl;
+                lightboxImage.alt = image.altText || 'Portfolio Image';
+                lightboxCaption.textContent = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            }
+        }
+
+        function showNextImage() {
+            currentImageIndex = (currentImageIndex + 1) % currentDisplayedImages.length;
+            updateLightboxContent();
+            resetZoomAndPan();
+        }
+
+        function showPrevImage() {
+            currentImageIndex = (currentImageIndex - 1 + currentDisplayedImages.length) % currentDisplayedImages.length;
+            updateLightboxContent();
+            resetZoomAndPan();
+        }
+
+        function resetZoomAndPan() {
+            currentZoom = 1;
+            imgX = 0;
+            imgY = 0;
+            lightboxImage.style.transform = `scale(${currentZoom}) translate(${imgX}px, ${imgY}px)`;
+            lightboxImage.style.cursor = 'grab';
+            isPanning = false;
+        }
+
+        // --- Zoom with Mouse Wheel ---
+        lightboxImage.addEventListener('wheel', (e) => {
+            e.preventDefault(); // Prevent page scrolling
+            const zoomAmount = 0.1;
+            const oldZoom = currentZoom;
+
+            if (e.deltaY < 0) { // Zoom in
+                currentZoom = Math.min(currentZoom + zoomAmount, 3); // Max zoom 3x
+            } else { // Zoom out
+                currentZoom = Math.max(currentZoom - zoomAmount, 0.5); // Min zoom 0.5x
+            }
+
+            // Adjust pan to zoom towards mouse pointer
+            const rect = lightboxImage.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const scaleFactor = currentZoom / oldZoom;
+            imgX = (imgX * scaleFactor) + (mouseX * (1 - scaleFactor));
+            imgY = (imgY * scaleFactor) + (mouseY * (1 - scaleFactor));
+
+            lightboxImage.style.transform = `scale(${currentZoom}) translate(${imgX}px, ${imgY}px)`;
+        });
+
+        // --- Pan with Mouse Drag ---
+        lightboxImage.addEventListener('mousedown', (e) => {
+            if (currentZoom > 1) { // Only pan if zoomed in
+                isPanning = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                lightboxImage.classList.add('panning');
+            }
+        });
+
+        lightbox.addEventListener('mousemove', (e) => { // Use lightbox for wider drag detection
+            if (!isPanning) return;
+            e.preventDefault();
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            imgX += dx / currentZoom; // Divide by currentZoom to make pan speed consistent
+            imgY += dy / currentZoom;
+
+            // Re-apply transform
+            lightboxImage.style.transform = `scale(${currentZoom}) translate(${imgX}px, ${imgY}px)`;
+
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        lightbox.addEventListener('mouseup', () => {
+            isPanning = false;
+            lightboxImage.classList.remove('panning');
+        });
+        lightbox.addEventListener('mouseleave', () => { // Stop panning if mouse leaves lightbox area
+            isPanning = false;
+            lightboxImage.classList.remove('panning');
+        });
+
+        // --- Share Button ---
+        lightboxShareBtn.addEventListener('click', async () => {
+            const imageUrlToShare = lightboxImage.src;
+            try {
+                if (navigator.clipboard) {
+                    await navigator.clipboard.writeText(imageUrlToShare);
+                    alert('Image link copied to clipboard!');
+                } else {
+                    // Fallback for browsers that don't support navigator.clipboard
+                    const tempInput = document.createElement('input');
+                    tempInput.value = imageUrlToShare;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    alert('Image link copied to clipboard!');
+                }
+            } catch (err) {
+                console.error('Failed to copy link:', err);
+                alert('Failed to copy link. Please copy it manually: ' + imageUrlToShare);
+            }
+        });
+
+
+        // --- Event Listeners for Lightbox Controls ---
+        lightboxCloseBtn.addEventListener('click', closeLightbox);
+        lightboxPrevBtn.addEventListener('click', showPrevImage);
+        lightboxNextBtn.addEventListener('click', showNextImage);
+
+        // Close lightbox when clicking on the overlay (but not the image itself)
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'ArrowRight') {
+                    showNextImage();
+                } else if (e.key === 'ArrowLeft') {
+                    showPrevImage();
+                } else if (e.key === 'Escape') {
                     closeLightbox();
                 }
-            });
-
-            // Keyboard navigation (optional)
-            document.addEventListener('keydown', function (e) {
-                if (!lightbox.classList.contains('hidden')) {
-                    if (e.key === 'ArrowRight') {
-                        showNextImage();
-                    } else if (e.key === 'ArrowLeft') {
-                        showPrevImage();
-                    } else if (e.key === 'Escape') {
-                        closeLightbox();
-                    }
-                }
-            });
-
-            // Re-bind click handlers for filter buttons to ensure currentImages is updated
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Timeout to ensure display 'none' / 'block' has been applied before updateCurrentImages
-                    setTimeout(updateCurrentImages, 100);
-                });
-            });
+            }
         });
+
+        // Initial fetch and render on page load
+        document.addEventListener('DOMContentLoaded', fetchAndRenderImages);
     </script>
 </body>
 
