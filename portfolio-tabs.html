@@ -30,7 +30,7 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
             max-width: 1200px;
-            margin: 0 auto; /* No margin on this, as it's inside tab-content */
+            margin: 0 auto;
             padding: 0;
         }
         .portfolio-item {
@@ -48,7 +48,7 @@
 
         .loading-message, .error-message, .no-images-message {
             text-align: center;
-            grid-column: 1 / -1; /* Make it span across all columns in grid context */
+            grid-column: 1 / -1;
             padding: 50px;
             font-size: 1.2em;
             color: #555;
@@ -66,7 +66,7 @@
             .portfolio-item img { height: 150px; }
             body { padding: 10px; }
             .tabs { flex-wrap: wrap; }
-            .tab-button { width: 100%; } /* Stack tabs vertically on small screens */
+            .tab-button { width: 100%; }
         }
     </style>
 </head>
@@ -91,49 +91,60 @@
         const tabContent = document.getElementById('tabContent');
         let allImages = []; // Stores all images fetched from the API
 
+        /**
+         * Fetches images from the API and renders them into the portfolio.
+         */
         async function fetchAndRenderImages() {
             try {
-                const response = await fetch('/api/images'); // Fetch from our new API endpoint
+                const response = await fetch('/api/images'); // Fetch from your images API endpoint
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                allImages = await response.json(); // Store all images
-                renderTabsAndContent(allImages);
+                allImages = await response.json(); // Store all fetched images
+                renderTabsAndContent(allImages); // Render tabs and content based on fetched images
             } catch (error) {
                 console.error('Error fetching images:', error);
                 tabContent.innerHTML = `<div class="error-message">Failed to load portfolio images. Error: ${error.message}</div>`;
             }
         }
 
+        /**
+         * Renders the category tabs and initial content based on the provided images.
+         * @param {Array} images - The array of image objects to process.
+         */
         function renderTabsAndContent(images) {
-            const categories = ['All']; // Start with 'All' tab
-            // Populate categories
+            const categories = ['All']; // Always start with an 'All' tab
+            // Collect unique categories from images
             images.forEach(img => {
-                const category = img.category || 'Uncategorized';
+                const category = img.category || 'Uncategorized'; // Default to 'Uncategorized' if not set
                 if (!categories.includes(category)) {
                     categories.push(category);
                 }
             });
 
             // Render Tab Buttons
-            portfolioTabs.innerHTML = ''; // Clear existing tabs
+            portfolioTabs.innerHTML = ''; // Clear existing tabs before re-rendering
             categories.forEach(category => {
                 const button = document.createElement('button');
                 button.classList.add('tab-button');
-                button.dataset.category = category;
+                button.dataset.category = category; // Store category in dataset
                 button.textContent = category;
-                button.addEventListener('click', () => switchTab(category));
+                button.addEventListener('click', () => switchTab(category)); // Attach click listener
                 portfolioTabs.appendChild(button);
             });
 
-            // Activate 'All' tab by default
+            // Activate 'All' tab by default and display its content
             const allButton = portfolioTabs.querySelector('[data-category="All"]');
             if (allButton) {
                 allButton.classList.add('active');
             }
-            displayImagesForCategory('All'); // Display 'All' images initially
+            displayImagesForCategory('All');
         }
 
+        /**
+         * Displays images filtered by the selected category.
+         * @param {string} selectedCategory - The category to filter images by.
+         */
         function displayImagesForCategory(selectedCategory) {
             tabContent.innerHTML = ''; // Clear previous content
             const imagesToDisplay = allImages.filter(img =>
@@ -152,22 +163,22 @@
                 const portfolioItem = document.createElement('div');
                 portfolioItem.classList.add('portfolio-item');
 
-                // Use image.imageUrl from Cloudinary
                 const imgElement = document.createElement('img');
-                imgElement.src = image.imageUrl; // This is the fix!
-                imgElement.alt = image.altText;
+                imgElement.src = image.imageUrl; // IMPORTANT: Use imageUrl from Cloudinary
+                imgElement.alt = image.altText || image.filename; // Fallback alt text
 
                 const infoDiv = document.createElement('div');
                 infoDiv.classList.add('portfolio-item-info');
 
                 const headingElement = document.createElement('h3');
+                // Use altText if available, otherwise derive from filename
                 headingElement.textContent = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-                const imgNameParagraph = document.createElement('p');
-                imgNameParagraph.textContent = `Category: ${image.category || 'Uncategorized'}`;
+                const imgCategoryParagraph = document.createElement('p');
+                imgCategoryParagraph.textContent = `Category: ${image.category || 'Uncategorized'}`;
 
                 infoDiv.appendChild(headingElement);
-                infoDiv.appendChild(imgNameParagraph);
+                infoDiv.appendChild(imgCategoryParagraph);
 
                 portfolioItem.appendChild(imgElement);
                 portfolioItem.appendChild(infoDiv);
@@ -177,20 +188,22 @@
             tabContent.appendChild(grid);
         }
 
+        /**
+         * Handles tab switching, updating active button class and displayed images.
+         * @param {string} category - The category to switch to.
+         */
         function switchTab(category) {
-            // Remove active class from all buttons
             document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
+                btn.classList.remove('active'); // Remove active class from all buttons
             });
-            // Add active class to the clicked button
             const activeBtn = document.querySelector(`.tab-button[data-category="${category}"]`);
             if (activeBtn) {
-                activeBtn.classList.add('active');
+                activeBtn.classList.add('active'); // Add active class to the clicked button
             }
-            displayImagesForCategory(category);
+            displayImagesForCategory(category); // Display images for the selected category
         }
 
-        // Initial fetch and render on page load
+        // Initial fetch and render when the page loads
         fetchAndRenderImages();
     </script>
 </body>
