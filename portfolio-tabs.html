@@ -107,18 +107,12 @@
 
         function renderTabsAndContent(images) {
             const categories = ['All']; // Start with 'All' tab
-            const categorizedImages = { 'All': [...images] }; // 'All' gets all images
-
-            // Populate categories and categorize images
+            // Populate categories
             images.forEach(img => {
                 const category = img.category || 'Uncategorized';
                 if (!categories.includes(category)) {
                     categories.push(category);
                 }
-                if (!categorizedImages[category]) {
-                    categorizedImages[category] = [];
-                }
-                categorizedImages[category].push(img);
             });
 
             // Render Tab Buttons
@@ -158,8 +152,9 @@
                 const portfolioItem = document.createElement('div');
                 portfolioItem.classList.add('portfolio-item');
 
+                // Use image.imageUrl from Cloudinary
                 const imgElement = document.createElement('img');
-                imgElement.src = `assets/img/${image.filename}`;
+                imgElement.src = image.imageUrl; // This is the fix!
                 imgElement.alt = image.altText;
 
                 const infoDiv = document.createElement('div');

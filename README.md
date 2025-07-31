@@ -4,7 +4,9 @@ DD
 ├─ .env
 ├─ api
 │  ├─ contact.js
-│  └─ lead.js
+│  ├─ images.js
+│  ├─ lead.js
+│  └─ portfolio-images.js
 ├─ assets
 │  ├─ css
 │  │  └─ style.css
@@ -44,6 +46,9 @@ DD
 │     ├─ favicon.png
 │     ├─ logo-w.png
 │     └─ logo.png
+├─ data
+│  └─ images.json
+├─ image-manager.html
 ├─ index.html
 ├─ package-lock.json
 ├─ package.json
@@ -55,6 +60,8 @@ DD
 │  ├─ PHPMailer.php
 │  ├─ POP3.php
 │  └─ SMTP.php
+├─ portfolio-tabs.html
+├─ portfolio.html
 ├─ privacy-policy.html
 ├─ README.md
 ├─ terms-conditions.html
