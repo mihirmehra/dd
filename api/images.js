@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 const { Pool } = require('pg'); // Import PostgreSQL client library
+const fs = require('fs/promises'); // Ensure fs/promises is imported for temp file handling
 
 // --- Cloudinary Configuration ---
 cloudinary.config({
@@ -14,15 +15,12 @@ cloudinary.config({
 });
 
 // --- Supabase PostgreSQL Configuration ---
-// The connection string is provided via Vercel Environment Variables.
+// IMPORTANT: Ensure this environment variable is set EXACTLY as 'SUPABASE_DB_URL' in Vercel.
+console.log('SUPABASE_DB_URL from environment:', process.env.SUPABASE_DB_URL); // Debug log
+
 const pool = new Pool({
-  connectionString: process.env.SUPABASE_DB_URL, // Use the environment variable set on Vercel
+  connectionString: process.env.SUPABASE_DB_URL, // <-- Changed to use SUPABASE_DB_URL
   ssl: {
-    // This is often required for connecting to external databases like Supabase
-    // from Vercel's serverless environment, as Vercel's functions might not
-    // have the necessary root certificates by default.
-    // For production, you might want to use a more robust SSL configuration
-    // if your Supabase setup provides specific certificates.
     rejectUnauthorized: false
   }
 });
@@ -80,7 +78,6 @@ async function insertImageToDb(image) {
 async function updateImageInDb(id, updates) {
     const client = await pool.connect();
     try {
-        // Build the SET clause dynamically for flexibility
         const setClauses = [];
         const values = [];
         let paramCounter = 1;
@@ -109,7 +106,6 @@ async function updateImageInDb(id, updates) {
         client.release();
     }
 }
-
 
 // Delete an image from the database
 async function deleteImageFromDb(id) {
@@ -149,7 +145,7 @@ module.exports = async (req, res) => {
             let fileBuffer;
             try {
                 // `fs.readFile` is still needed here to read the temporary file created by formidable
-                fileBuffer = await require('fs/promises').readFile(imageFile.filepath);
+                fileBuffer = await fs.readFile(imageFile.filepath); // Changed from require('fs/promises')
             } catch (readErr) {
                 console.error('Error reading temporary file:', readErr);
                 return res.status(500).json({ message: 'Failed to read uploaded file.', error: readErr.message });
@@ -168,7 +164,7 @@ module.exports = async (req, res) => {
                 });
 
                 // Clean up the temporary file created by formidable
-                await require('fs/promises').unlink(imageFile.filepath).catch(unlinkErr => {
+                await fs.unlink(imageFile.filepath).catch(unlinkErr => { // Changed from require('fs/promises')
                     console.warn(`Could not delete temporary file ${imageFile.filepath}: ${unlinkErr.message}`);
                 });
 
@@ -193,7 +189,7 @@ module.exports = async (req, res) => {
             } catch (error) {
                 console.error('Error uploading to Cloudinary or saving to DB:', error);
                 // Attempt to clean up temp file if something went wrong after reading
-                await require('fs/promises').unlink(imageFile.filepath).catch(() => {});
+                await fs.unlink(imageFile.filepath).catch(() => {}); // Changed from require('fs/promises')
                 return res.status(500).json({ message: 'Failed to upload image or save data to database.', error: error.message });
             }
         });
@@ -262,7 +258,6 @@ module.exports = async (req, res) => {
             } finally {
                 client.release();
             }
-
 
             // Delete from Cloudinary
             if (imageToDelete && imageToDelete.cloudinaryPublicId) {
