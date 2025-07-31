@@ -3,7 +3,7 @@ const { IncomingForm } = require('formidable');
 const { v4: uuidv4 } = require('uuid');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb'); // Keep ObjectId in case it's needed for other parts, but we'll use string _id for our operations.
 const fs = require('fs/promises');
 
 // --- Cloudinary Configuration ---
@@ -54,9 +54,10 @@ async function readImagesFromDb() {
     const collection = client.db(dbName).collection('images');
     const images = await collection.find({}).sort({ order: 1, uploadDate: 1 }).toArray();
     return images.map(img => {
+        // Ensure 'id' is always the string UUID that matches the _id in DB
         return {
             ...img,
-            id: img.id || img._id.toString()
+            id: img._id.toString() 
         };
     });
 }
@@ -64,19 +65,22 @@ async function readImagesFromDb() {
 async function insertImageToDb(image) {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
-    const docToInsert = { ...image, _id: image.id };
+    // Store the UUID string directly as _id
+    const docToInsert = { ...image, _id: image.id }; 
     await collection.insertOne(docToInsert);
 }
 
 async function updateImageInDb(id, updates) {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
+    // Query by _id (which is a string UUID)
     await collection.updateOne({ _id: id }, { $set: updates });
 }
 
 async function deleteImageFromDb(id) {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
+    // Query by _id (which is a string UUID)
     await collection.deleteOne({ _id: id });
 }
 
@@ -146,7 +150,7 @@ module.exports = async (req, res) => {
                     maxOrder++; // Increment order for each new image
                     const newId = uuidv4();
                     const newImage = {
-                        id: newId,
+                        id: newId, // This is the UUID string
                         filename: originalFilename,
                         cloudinaryPublicId: cloudinaryUploadResult.public_id,
                         imageUrl: cloudinaryUploadResult.secure_url,
@@ -156,7 +160,7 @@ module.exports = async (req, res) => {
                         uploadDate: new Date().toISOString()
                     };
 
-                    await insertImageToDb(newImage);
+                    await insertImageToDb(newImage); // Will store newId as _id
                     results.push({ filename: originalFilename, success: true, image: newImage });
 
                 } catch (error) {
@@ -192,12 +196,13 @@ module.exports = async (req, res) => {
 
     } else if (req.method === 'PUT') {
         try {
-            const updates = JSON.parse(req.body);
+            // Assume req.body is already parsed JSON object by Vercel
+            const updates = req.body; 
 
             if (Array.isArray(updates.updates)) { // Batch reorder
                 const operations = updates.updates.map(update => ({
                     updateOne: {
-                        filter: { _id: update.id },
+                        filter: { _id: update.id }, // Use the string UUID for _id
                         update: { $set: { order: update.order } }
                     }
                 }));
@@ -221,16 +226,18 @@ module.exports = async (req, res) => {
 
     } else if (req.method === 'DELETE') {
         try {
-            const { id } = JSON.parse(req.body);
+            // Assume req.body is already parsed JSON object by Vercel
+            const { id } = req.body; 
             if (!id) {
                 return res.status(400).json({ message: 'Image ID is required for deletion.' });
             }
 
             const collection = client.db(dbName).collection('images');
-            const imageToDelete = await collection.findOne({ _id: id });
+            // Ensure we are querying using the 'id' (UUID string) that matches the _id field
+            const imageToDelete = await collection.findOne({ _id: id }); 
 
             if (!imageToDelete) {
-                return res.status(404).json({ message: 'Image not found.' });
+                return res.status(404).json({ message: 'Image not found in database.' });
             }
 
             if (imageToDelete.cloudinaryPublicId) {
@@ -238,16 +245,18 @@ module.exports = async (req, res) => {
                     await cloudinary.uploader.destroy(imageToDelete.cloudinaryPublicId);
                     console.log(`Cloudinary image ${imageToDelete.cloudinaryPublicId} deleted successfully.`);
                 } catch (cloudinaryError) {
-                    console.warn(`Cloudinary Error: Failed to delete image from Cloudinary (${imageToDelete.cloudinaryPublicId}): ${cloudinaryError.message}`);
+                    console.warn(`Cloudinary Error: Failed to delete image from Cloudinary (${imageToDelete.cloudinaryPublicId}): ${cloudinaryError.message}. Image will still be removed from database.`);
+                    // DO NOT re-throw, allow DB deletion to proceed even if Cloudinary fails
                 }
             }
 
-            await deleteImageFromDb(id);
+            // Delete from MongoDB using the same 'id' (UUID string)
+            await collection.deleteOne({ _id: id });
 
             res.status(200).json({ message: 'Image deleted successfully!', id });
 
         } catch (error) {
-            console.error('API Error: Failed to delete image:', error);
+            console.error('API Error: Failed to delete image from database:', error); // More specific error log
             res.status(500).json({ message: 'Failed to delete image.', error: error.message });
         }
 
