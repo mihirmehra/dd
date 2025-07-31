@@ -3,124 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Manager</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Image Manager - DesignDuet</title>
+    <link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <script>
+        // Tailwind config from index.html
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#A238F0',
+                        secondary: '#3B3CFD'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '28px',
+                        'full': '9999px',
+                    },
+                    boxShadow: {
+                        'custom-light': '0 4px 15px rgba(0, 0, 0, 0.08)',
+                        'custom-medium': '0 8px 25px rgba(0, 0, 0, 0.15)',
+                        'custom-dark': '0 12px 35px rgba(0, 0, 0, 0.25)',
+                    },
+                    keyframes: {
+                        'fade-in': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        'slide-in-left': {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                        'slide-in-right': {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                    },
+                    animation: {
+                        'fade-in': 'fade-in 0.8s ease-out forwards',
+                        'slide-in-left': 'slide-in-left 0.7s ease-out forwards',
+                        'slide-in-right': 'slide-in-right 0.7s ease-out forwards',
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #007bff; text-align: center; margin-bottom: 25px; }
-        .form-section { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="file"], select {
-            width: calc(100% - 22px); padding: 10px; border: 1px solid #ccc; border-radius: 4px;
-            font-size: 1em;
+        /* Custom styles for SortableJS ghost element */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #e2e8f0; /* bg-blue-100 */
+            border: 2px dashed #a238f0; /* border-primary */
         }
-        button {
-            background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px;
-            cursor: pointer; font-size: 1em; transition: background-color 0.3s ease;
-        }
-        button:hover { background-color: #0056b3; }
-        button.delete-btn { background-color: #dc3545; margin-left: 10px; }
-        button.delete-btn:hover { background-color: #c82333; }
-        button.edit-btn { background-color: #ffc107; color: #333; margin-left: 5px; }
-        button.edit-btn:hover { background-color: #e0a800; }
-        button.save-btn { background-color: #28a745; margin-right: 5px;}
-        button.save-btn:hover { background-color: #218838; }
-
-        .image-list { margin-top: 30px; }
-        .image-item {
-            display: flex; align-items: center; border: 1px solid #eee; padding: 10px; margin-bottom: 10px;
-            background-color: #fdfdfd; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            transition: background-color 0.2s ease;
-        }
-        .image-item:hover { background-color: #f9f9f9; }
-        .image-item img { width: 80px; height: 80px; object-fit: cover; margin-right: 15px; border-radius: 4px; }
-        .image-details { flex-grow: 1; }
-        .image-details strong { display: block; margin-bottom: 5px; }
-        .image-details span { font-size: 0.9em; color: #666; }
-        .image-actions { display: flex; gap: 5px; }
-
-        .sortable-ghost { opacity: 0.4; } /* For SortableJS */
-
-        .status-message {
-            margin-top: 20px; padding: 10px; border-radius: 5px; text-align: center;
-        }
-        .status-message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .status-message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
-        /* Modal for editing */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888;
-            width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .close-button {
-            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
-        }
-        .close-button:hover, .close-button:focus { color: black; text-decoration: none; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Image Manager</h1>
+<body class="font-inter text-gray-800 bg-gray-50 flex flex-col min-h-screen">
 
-        <div class="form-section">
-            <h2>Add New Image</h2>
-            <div id="statusMessage" class="status-message" style="display:none;"></div>
-            <form id="imageUploadForm">
+    <header class="bg-white shadow-sm py-4 z-50 sticky top-0">
+        <nav class="container mx-auto flex justify-between items-center px-4 lg:px-0">
+            <a href="index.html" class="text-3xl font-bold text-primary flex items-center gap-2">
+                <img src="assets/img/favicon.png" alt="DesignDuet Logo" class="h-8 w-8"> DesignDuet
+            </a>
+            <div class="hidden lg:flex space-x-8 items-center">
+                <a href="index.html" class="text-lg font-medium text-gray-600 hover:text-primary transition-colors">Home</a>
+                <a href="portfolio-tabs.html" class="text-lg font-medium text-primary hover:text-primary transition-colors">Portfolio</a>
+                <a href="pricing.html" class="text-lg font-medium text-gray-600 hover:text-primary transition-colors">Pricing</a>
+                <a href="contact.html" class="text-lg font-medium text-gray-600 hover:text-primary transition-colors">Contact</a>
+                <a href="image-manager.html" class="text-lg font-medium text-gray-600 hover:text-primary transition-colors">Manager</a>
+                <a href="index.html#contact" class="bg-primary text-white py-2 px-6 rounded-md shadow-md hover:bg-opacity-90 transition-all duration-300">Get Started</a>
+            </div>
+            <div class="lg:hidden">
+                <button id="mobile-menu-button" class="text-gray-600 hover:text-primary focus:outline-none">
+                    <i class="ri-menu-line text-3xl"></i>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden lg:hidden bg-white shadow-lg py-4 mt-2">
+            <a href="index.html" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Home</a>
+            <a href="portfolio-tabs.html" class="block px-4 py-2 text-primary hover:bg-gray-100">Portfolio</a>
+            <a href="pricing.html" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Pricing</a>
+            <a href="contact.html" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Contact</a>
+            <a href="image-manager.html" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Manager</a>
+            <a href="index.html#contact" class="block px-4 py-2 text-primary hover:bg-opacity-90">Get Started</a>
+        </div>
+    </header>
+
+    <div class="flex-grow container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-primary text-center mb-8">Image Manager</h1>
+
+        <div class="form-section bg-white rounded-xl shadow-custom-light p-6 mb-8 border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Add New Image</h2>
+            <div id="statusMessage" class="hidden mt-4 p-3 rounded text-center text-sm" role="alert"></div>
+            <form id="imageUploadForm" class="space-y-4">
                 <div class="form-group">
-                    <label for="imageFile">Image File:</label>
-                    <input type="file" id="imageFile" name="image" accept="image/*" required>
+                    <label for="imageFile" class="block text-gray-700 text-sm font-bold mb-2">Image File:</label>
+                    <input type="file" id="imageFile" name="image" accept="image/*" required
+                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-opacity-90">
                 </div>
                 <div class="form-group">
-                    <label for="altText">Alt Text (Optional):</label>
-                    <input type="text" id="altText" name="altText" placeholder="Describe the image for accessibility">
+                    <label for="altText" class="block text-gray-700 text-sm font-bold mb-2">Alt Text (Optional):</label>
+                    <input type="text" id="altText" name="altText" placeholder="Describe the image for accessibility"
+                           class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-primary">
                 </div>
                 <div class="form-group">
-                    <label for="category">Category/Tab (e.g., Nature, Abstract, Portraits):</label>
-                    <input type="text" id="category" name="category" placeholder="Enter category">
+                    <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category/Tab (e.g., Web Designs, Graphic Designs):</label>
+                    <select id="category" name="category"
+                            class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-primary">
+                        <option value="Web Designs">Web Designs</option>
+                        <option value="Graphic Designs">Graphic Designs</option>
+                        <option value="Printing Designs">Printing Designs</option>
+                        <option value="3D Designs">3D Designs</option>
+                        <option value="Uncategorized">Uncategorized</option>
+                    </select>
                 </div>
-                <button type="submit">Upload Image</button>
+                <button type="submit"
+                        class="bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300 w-full sm:w-auto">
+                    Upload Image
+                </button>
             </form>
         </div>
 
-        <div class="image-list">
-            <h2>Existing Images (Drag to Reorder)</h2>
-            <ul id="imageList">
-                <p>Loading images...</p>
+        <div class="image-list bg-white rounded-xl shadow-custom-light p-6">
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Existing Images (Drag to Reorder)</h2>
+            <ul id="imageList" class="space-y-4">
+                <p class="text-center text-gray-600">Loading images...</p>
             </ul>
-            <button id="saveOrderBtn" style="display:none;">Save New Order</button>
+            <button id="saveOrderBtn" style="display:none;"
+                    class="mt-6 bg-secondary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300 w-full sm:w-auto">
+                Save New Order
+            </button>
         </div>
     </div>
 
-    <div id="editImageModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Edit Image</h2>
-            <form id="editImageForm">
+    <div id="editImageModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-[1000] hidden">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-11/12 max-w-lg relative">
+            <span class="close-button absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl cursor-pointer">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Edit Image</h2>
+            <form id="editImageForm" class="space-y-4">
                 <input type="hidden" id="editImageId">
                 <div class="form-group">
-                    <label for="editAltText">Alt Text:</label>
-                    <input type="text" id="editAltText" name="altText">
+                    <label for="editAltText" class="block text-gray-700 text-sm font-bold mb-2">Alt Text:</label>
+                    <input type="text" id="editAltText" name="altText"
+                           class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-primary">
                 </div>
                 <div class="form-group">
-                    <label for="editCategory">Category:</label>
-                    <input type="text" id="editCategory" name="category">
+                    <label for="editCategory" class="block text-gray-700 text-sm font-bold mb-2">Category:</label>
+                    <select id="editCategory" name="category"
+                            class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-primary">
+                        <option value="Web Designs">Web Designs</option>
+                        <option value="Graphic Designs">Graphic Designs</option>
+                        <option value="Printing Designs">Printing Designs</option>
+                        <option value="3D Designs">3D Designs</option>
+                        <option value="Uncategorized">Uncategorized</option>
+                    </select>
                 </div>
-                <button type="submit" class="save-btn">Save Changes</button>
-                <button type="button" class="close-button" onclick="document.getElementById('editImageModal').style.display='none'">Cancel</button>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="submit"
+                            class="save-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300">
+                        Save Changes
+                    </button>
+                    <button type="button"
+                            class="close-button bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300"
+                            onclick="document.getElementById('editImageModal').style.display='none'">
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     </div>
+
+    <footer class="bg-gray-900 text-white py-10 mt-auto">
+        <div class="container mx-auto px-4 lg:px-0 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h3 class="text-2xl font-bold text-primary mb-4">DesignDuet</h3>
+                <p class="text-gray-400 text-sm">Crafting digital experiences that captivate and convert. Your vision, our expertise, a masterpiece achieved.</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
+                <ul class="space-y-2">
+                    <li><a href="index.html" class="text-gray-400 hover:text-primary transition-colors">Home</a></li>
+                    <li><a href="portfolio-tabs.html" class="text-gray-400 hover:text-primary transition-colors">Portfolio</a></li>
+                    <li><a href="pricing.html" class="text-gray-400 hover:text-primary transition-colors">Pricing</a></li>
+                    <li><a href="contact.html" class="text-gray-400 hover:text-primary transition-colors">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-4">Contact Us</h3>
+                <p class="text-gray-400 text-sm">
+                    123 Design St, Creative City, CA 90210<br>
+                    Email: info@designduet.com<br>
+                    Phone: (123) 456-7890
+                </p>
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i class="ri-facebook-fill"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i class="ri-twitter-fill"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i class="ri-instagram-fill"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl"><i class="ri-linkedin-fill"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-gray-500 text-sm mt-10 border-t border-gray-800 pt-6">
+            &copy; 2024 DesignDuet. All rights reserved.
+        </div>
+    </footer>
+
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
         const imageUploadForm = document.getElementById('imageUploadForm');
+        const imageFile = document.getElementById('imageFile');
+        const altText = document.getElementById('altText');
+        const categorySelect = document.getElementById('category'); // Renamed for clarity
         const imageList = document.getElementById('imageList');
         const statusMessage = document.getElementById('statusMessage');
         const saveOrderBtn = document.getElementById('saveOrderBtn');
@@ -129,19 +234,33 @@
         const editImageForm = document.getElementById('editImageForm');
         const editImageId = document.getElementById('editImageId');
         const editAltText = document.getElementById('editAltText');
-        const editCategory = document.getElementById('editCategory');
-        const closeModalButtons = document.querySelectorAll('.close-button');
-
+        const editCategorySelect = document.getElementById('editCategory'); // Renamed for clarity
 
         let currentImages = []; // To store the current state of images
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
 
         // --- Utility Functions ---
         function showStatus(message, type) {
             statusMessage.textContent = message;
-            statusMessage.className = `status-message ${type}`;
-            statusMessage.style.display = 'block';
+            statusMessage.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            if (type === 'success') {
+                statusMessage.classList.add('bg-green-100', 'text-green-700');
+            } else if (type === 'error') {
+                statusMessage.classList.add('bg-red-100', 'text-red-700');
+            }
+            statusMessage.style.display = 'block'; // Ensure display is block
             setTimeout(() => {
-                statusMessage.style.display = 'none';
+                statusMessage.style.display = 'none'; // Hide after 5 seconds
+                statusMessage.classList.add('hidden'); // Add hidden class back
             }, 5000);
         }
 
@@ -155,11 +274,10 @@
                 const images = await response.json();
                 currentImages = images; // Store fetched images
                 renderImageList(images);
-                // Show save order button only if there are images
                 saveOrderBtn.style.display = images.length > 0 ? 'block' : 'none';
             } catch (error) {
                 console.error('Error fetching images:', error);
-                imageList.innerHTML = `<p class="error-message">Failed to load images: ${error.message}</p>`;
+                imageList.innerHTML = `<p class="text-center text-red-500">Failed to load images: ${error.message}</p>`;
                 saveOrderBtn.style.display = 'none';
             }
         }
@@ -167,27 +285,31 @@
         function renderImageList(images) {
             imageList.innerHTML = ''; // Clear existing list items
             if (images.length === 0) {
-                imageList.innerHTML = '<p>No images uploaded yet.</p>';
+                imageList.innerHTML = '<p class="text-center text-gray-600">No images uploaded yet.</p>';
                 return;
             }
 
             images.forEach(image => {
                 const li = document.createElement('li');
-                li.classList.add('image-item');
+                li.classList.add(
+                    'image-item', // Custom class for JS targeting
+                    'flex', 'items-center', 'border', 'border-gray-200', 'p-4', 'mb-3',
+                    'bg-white', 'rounded-md', 'shadow-sm', 'transition-all', 'duration-200',
+                    'hover:shadow-md'
+                );
                 li.dataset.id = image.id; // Store image ID for drag & drop and actions
 
                 li.innerHTML = `
-                    <img src="${image.imageUrl}" alt="${image.altText || image.filename}">
-                    <div class="image-details">
-                        <strong>${image.filename}</strong>
-                        <span>Alt: ${image.altText || 'N/A'}</span><br>
-                        <span>Category: ${image.category || 'N/A'}</span><br>
-                        <span>Order: ${image.order}</span><br>
-                        <span>Cloudinary ID: ${image.cloudinaryPublicId}</span>
+                    <img src="${image.imageUrl}" alt="${image.altText || image.filename}" class="w-20 h-20 object-cover mr-4 rounded-md border border-gray-100">
+                    <div class="image-details flex-grow">
+                        <strong class="block text-lg font-semibold text-gray-900">${image.filename}</strong>
+                        <span class="text-sm text-gray-600">Alt: ${image.altText || 'N/A'}</span><br>
+                        <span class="text-sm text-gray-600">Category: ${image.category || 'N/A'}</span><br>
+                        <span class="text-sm text-gray-600">Order: ${image.order}</span>
                     </div>
-                    <div class="image-actions">
-                        <button class="edit-btn" data-id="${image.id}">Edit</button>
-                        <button class="delete-btn" data-id="${image.id}">Delete</button>
+                    <div class="image-actions flex space-x-2">
+                        <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm" data-id="${image.id}">Edit</button>
+                        <button class="delete-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm" data-id="${image.id}">Delete</button>
                     </div>
                 `;
                 imageList.appendChild(li);
@@ -197,19 +319,18 @@
 
         // --- Handle Image Upload ---
         imageUploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevent default form submission
-            const formData = new FormData(imageUploadForm); // Create FormData object
+            e.preventDefault();
+            const formData = new FormData(imageUploadForm);
 
             try {
                 const response = await fetch('/api/images', {
                     method: 'POST',
-                    body: formData, // FormData handles setting Content-Type for multipart/form-data
+                    body: formData,
                 });
 
-                const result = await response.json(); // Parse response JSON
+                const result = await response.json();
 
                 if (!response.ok) {
-                    // If response is not OK (e.g., 400, 500), throw an error
                     throw new Error(result.message || 'Upload failed');
                 }
 
@@ -225,12 +346,11 @@
         // --- Handle Image Edit & Delete (using Event Delegation) ---
         imageList.addEventListener('click', async (e) => {
             const target = e.target;
-            const id = target.dataset.id; // Get image ID from the clicked button's data-id attribute
+            const id = target.dataset.id;
 
-            if (!id) return; // If no ID, it's not an action button
+            if (!id) return;
 
             if (target.classList.contains('delete-btn')) {
-                // Confirm deletion with the user
                 if (!confirm('Are you sure you want to delete this image? This cannot be undone from Cloudinary as well.')) {
                     return;
                 }
@@ -238,38 +358,37 @@
                     const response = await fetch('/api/images', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id }), // Send ID in JSON body
+                        body: JSON.stringify({ id }),
                     });
                     const result = await response.json();
                     if (!response.ok) {
                         throw new Error(result.message || 'Deletion failed');
                     }
                     showStatus('Image deleted successfully!', 'success');
-                    await fetchImages(); // Refresh the list
+                    await fetchImages();
                 } catch (error) {
                     console.error('Delete Error:', error);
                     showStatus(`Deletion failed: ${error.message}`, 'error');
                 }
             } else if (target.classList.contains('edit-btn')) {
-                // Populate modal with existing image data for editing
                 const imageToEdit = currentImages.find(img => img.id === id);
                 if (imageToEdit) {
                     editImageId.value = imageToEdit.id;
                     editAltText.value = imageToEdit.altText || '';
-                    editCategory.value = imageToEdit.category || '';
-                    editImageModal.style.display = 'flex'; // Show modal (using flex to center)
+                    editCategorySelect.value = imageToEdit.category || 'Uncategorized'; // Set default if null/undefined
+                    editImageModal.style.display = 'flex';
                 }
             }
         });
 
-        // --- Handle Modal Close (using Event Delegation for close buttons) ---
-        closeModalButtons.forEach(button => {
+        // --- Handle Modal Close ---
+        // Using event delegation for modal close buttons
+        document.querySelectorAll('.close-button').forEach(button => {
             button.addEventListener('click', () => {
                 editImageModal.style.display = 'none';
             });
         });
 
-        // Close modal if user clicks outside of it
         window.addEventListener('click', (event) => {
             if (event.target == editImageModal) {
                 editImageModal.style.display = 'none';
@@ -281,21 +400,21 @@
             e.preventDefault();
             const id = editImageId.value;
             const altText = editAltText.value;
-            const category = editCategory.value;
+            const category = editCategorySelect.value; // Get value from select
 
             try {
                 const response = await fetch('/api/images', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, altText, category }), // Send updated fields
+                    body: JSON.stringify({ id, altText, category }),
                 });
                 const result = await response.json();
                 if (!response.ok) {
                     throw new Error(result.message || 'Update failed');
                 }
                 showStatus('Image updated successfully!', 'success');
-                editImageModal.style.display = 'none'; // Hide modal
-                await fetchImages(); // Refresh the list to show changes
+                editImageModal.style.display = 'none';
+                await fetchImages();
             } catch (error) {
                 console.error('Update Error:', error);
                 showStatus(`Update failed: ${error.message}`, 'error');
@@ -306,13 +425,12 @@
         let sortableInstance;
         function initializeSortable() {
             if (sortableInstance) {
-                sortableInstance.destroy(); // Destroy existing instance before creating a new one
+                sortableInstance.destroy();
             }
             sortableInstance = new Sortable(imageList, {
                 animation: 150,
-                ghostClass: 'sortable-ghost', // Class for the ghost element
+                ghostClass: 'sortable-ghost',
                 onEnd: function (evt) {
-                    // Show the save button when the order has changed by dragging
                     saveOrderBtn.style.display = 'block';
                 }
             });
@@ -320,31 +438,29 @@
 
         // --- Save New Order Button ---
         saveOrderBtn.addEventListener('click', async () => {
-            // Get the new order of images from the DOM elements
             const newOrder = Array.from(imageList.children).map((item, index) => ({
                 id: item.dataset.id,
-                order: index + 1 // Assign new order based on current list position (1-indexed)
+                order: index + 1
             }));
 
             try {
                 const response = await fetch('/api/images', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ updates: newOrder }), // Send the array of updates
+                    body: JSON.stringify({ updates: newOrder }),
                 });
                 const result = await response.json();
                 if (!response.ok) {
                     throw new Error(result.message || 'Reorder failed');
                 }
                 showStatus('Image order saved successfully!', 'success');
-                saveOrderBtn.style.display = 'none'; // Hide button after saving
-                await fetchImages(); // Re-fetch to confirm order (will re-render with new order)
+                saveOrderBtn.style.display = 'none';
+                await fetchImages();
             } catch (error) {
                 console.error('Reorder Error:', error);
                 showStatus(`Reorder failed: ${error.message}`, 'error');
             }
         });
-
 
         // Initial fetch and render of images when the Image Manager page loads
         fetchImages();
