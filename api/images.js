@@ -1,9 +1,25 @@
-const fs = require('fs/promises'); // Use promise-based fs
+const fs = require('fs/promises');
 const path = require('path');
-const { IncomingForm } = require('formidable'); // For file uploads
-const { v4: uuidv4 } = require('uuid'); // For unique IDs
+const { IncomingForm } = require('formidable');
+const { v4: uuidv4 } = require('uuid');
+const cloudinary = require('cloudinary').v2; // Import Cloudinary SDK
+const streamifier = require('streamifier'); // To pipe buffer to Cloudinary
 
-const IMAGES_DIR = path.join(process.cwd(), 'assets', 'img');
+// --- Cloudinary Configuration ---
+// It's best practice to get these from environment variables on Vercel
+// You've provided them, so make sure they are set in your Vercel project settings
+// (under Project Settings -> Environment Variables)
+// For local development, you'd use a .env file and dotenv package.
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET_KEY,
+  secure: true // Use HTTPS URLs
+});
+
+// We no longer need IMAGES_DIR for saving uploaded files permanently
+// const IMAGES_DIR = path.join(process.cwd(), 'assets', 'img'); // No longer used for saving uploads
+
 const DATA_FILE = path.join(process.cwd(), 'data', 'images.json');
 
 // Helper to read images data
@@ -12,7 +28,8 @@ async function readImagesData() {
         const data = await fs.readFile(DATA_FILE, 'utf8');
         return JSON.parse(data);
     } catch (error) {
-        if (error.code === 'ENOENT') { // File not found
+        if (error.code === 'ENOENT') { // File not found, return empty array
+            console.warn('images.json not found, initializing with empty array.');
             return [];
         }
         console.error('Error reading images data:', error);
@@ -23,6 +40,8 @@ async function readImagesData() {
 // Helper to write images data
 async function writeImagesData(data) {
     try {
+        // Ensure the data directory exists
+        await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
         await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
     } catch (error) {
         console.error('Error writing images data:', error);
@@ -30,107 +49,151 @@ async function writeImagesData(data) {
     }
 }
 
-module.exports = async (req, res) => {
-    // Ensure IMAGES_DIR exists
-    try {
-        await fs.mkdir(IMAGES_DIR, { recursive: true });
-    } catch (e) {
-        console.error('Could not create images directory:', e);
-        return res.status(500).json({ message: 'Server configuration error: Image directory not accessible.' });
-    }
+// Helper function to upload buffer to Cloudinary
+function uploadToCloudinary(buffer, options) {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        });
+        streamifier.createReadStream(buffer).pipe(uploadStream);
+    });
+}
 
+module.exports = async (req, res) => {
     if (req.method === 'POST') { // Add Image (Upload)
         const form = new IncomingForm({
-            uploadDir: IMAGES_DIR,
-            keepExtensions: true,
-            maxFileSize: 10 * 1024 * 1024, // 10MB limit
+            // formidable will still write to a temp directory, which is fine
+            // We just won't 'rename' it to assets/img permanently
+            maxFileSize: 20 * 1024 * 1024, // 20MB limit (Cloudinary's free tier has limits)
             multiples: false,
+            allowEmptyFiles: false,
+            minFileSize: 1 // Ensure some file content
         });
 
         form.parse(req, async (err, fields, files) => {
             if (err) {
-                console.error('Error parsing form:', err);
-                return res.status(400).json({ message: 'Error uploading image.', error: err.message });
+                console.error('Error parsing form (file upload issue):', err);
+                // More specific error messages for formidable errors
+                let message = 'Error uploading image.';
+                if (err.code === 1009) message = 'File size too large.'; // Max file size exceeded
+                if (err.code === 1001) message = 'No file received or file is empty.'; // No file or empty file
+                return res.status(400).json({ message, error: err.message });
             }
 
-            const imageFile = files.image && files.image[0]; // Access the first file if multiples is false
+            const imageFile = files.image && files.image[0];
 
             if (!imageFile) {
                 return res.status(400).json({ message: 'No image file provided.' });
             }
 
-            const oldPath = imageFile.filepath;
-            const newFilename = `${uuidv4()}${path.extname(imageFile.originalFilename)}`;
-            const newPath = path.join(IMAGES_DIR, newFilename);
+            // Read the temporary file into a buffer
+            let fileBuffer;
+            try {
+                fileBuffer = await fs.readFile(imageFile.filepath);
+            } catch (readErr) {
+                console.error('Error reading temporary file:', readErr);
+                return res.status(500).json({ message: 'Failed to read uploaded file.', error: readErr.message });
+            }
+
+            // Extract metadata from form fields
+            const altText = fields.altText && fields.altText[0] ? fields.altText[0] : '';
+            const category = fields.category && fields.category[0] ? fields.category[0] : 'Uncategorized';
+            const originalFilename = imageFile.originalFilename;
 
             try {
-                // Move the uploaded file to the desired location with a new name
-                await fs.rename(oldPath, newPath);
+                // Upload to Cloudinary
+                const cloudinaryUploadResult = await uploadToCloudinary(fileBuffer, {
+                    folder: 'portfolio_images', // Optional: Folder in your Cloudinary account
+                    public_id: `portfolio-${uuidv4()}-${path.parse(originalFilename).name}`, // Unique public ID
+                    resource_type: 'image',
+                    altText: altText // Cloudinary can store this as metadata, though we save it in JSON too
+                });
+
+                // Clean up the temporary file created by formidable
+                await fs.unlink(imageFile.filepath).catch(unlinkErr => {
+                    console.warn(`Could not delete temporary file ${imageFile.filepath}: ${unlinkErr.message}`);
+                });
 
                 const images = await readImagesData();
                 const newId = uuidv4();
                 const newImage = {
                     id: newId,
-                    filename: newFilename,
-                    altText: fields.altText && fields.altText[0] ? fields.altText[0] : newFilename.split('.')[0].replace(/[-_]/g, ' '),
-                    category: fields.category && fields.category[0] ? fields.category[0] : 'Uncategorized',
-                    order: images.length > 0 ? Math.max(...images.map(img => img.order)) + 1 : 1, // Simple sequential order
+                    filename: originalFilename, // We can store the original name
+                    cloudinaryPublicId: cloudinaryUploadResult.public_id, // Store Cloudinary's public ID
+                    imageUrl: cloudinaryUploadResult.secure_url, // Store the secure URL
+                    altText: altText || originalFilename.split('.')[0].replace(/[-_]/g, ' '),
+                    category: category,
+                    order: images.length > 0 ? Math.max(...images.map(img => img.order || 0)) + 1 : 1,
                     uploadDate: new Date().toISOString()
                 };
                 images.push(newImage);
                 await writeImagesData(images);
 
-                res.status(201).json({ message: 'Image uploaded and data saved successfully!', image: newImage });
+                res.status(201).json({ message: 'Image uploaded to Cloudinary and data saved successfully!', image: newImage });
 
-            } catch (fileError) {
-                console.error('Error moving file or saving data:', fileError);
-                // Clean up partially uploaded file if rename fails
-                await fs.unlink(oldPath).catch(() => {}); // Don't throw if unlink fails
-                return res.status(500).json({ message: 'Failed to process image upload.', error: fileError.message });
+            } catch (uploadError) {
+                console.error('Error uploading to Cloudinary or saving data:', uploadError);
+                // Attempt to clean up temp file if something went wrong after reading
+                await fs.unlink(imageFile.filepath).catch(() => {});
+                return res.status(500).json({ message: 'Failed to upload image or save data.', error: uploadError.message });
             }
         });
 
     } else if (req.method === 'GET') { // View All Images
         try {
             const images = await readImagesData();
-            // Sort by order first, then by filename if order is the same
-            images.sort((a, b) => a.order - b.order || a.filename.localeCompare(b.filename));
+            // Sort by order first, then by uploadDate
+            images.sort((a, b) => (a.order || 0) - (b.order || 0) || new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
             res.status(200).json(images);
         } catch (error) {
             res.status(500).json({ message: 'Failed to retrieve images.', error: error.message });
         }
 
-    } else if (req.method === 'PUT') { // Update Image Metadata
+    } else if (req.method === 'PUT') { // Update Image Metadata & Reorder (combined for simplicity)
         try {
-            const { id, filename, altText, category, order } = JSON.parse(req.body);
-            if (!id) {
-                return res.status(400).json({ message: 'Image ID is required for update.' });
-            }
-
+            const updates = JSON.parse(req.body); // Can be a single object or an array for reorder
             let images = await readImagesData();
-            const index = images.findIndex(img => img.id === id);
 
-            if (index === -1) {
-                return res.status(404).json({ message: 'Image not found.' });
+            if (Array.isArray(updates.updates)) { // Batch update for reordering
+                const updatedIds = new Set(updates.updates.map(u => u.id));
+                images = images.map(img => {
+                    const update = updates.updates.find(u => u.id === img.id);
+                    return update ? { ...img, order: update.order } : img;
+                });
+                // Sort immediately after reorder for consistency
+                images.sort((a, b) => (a.order || 0) - (b.order || 0) || new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
+                await writeImagesData(images);
+                res.status(200).json({ message: 'Image order updated successfully!', images });
+
+            } else { // Single image metadata update
+                const { id, altText, category } = updates; // No 'filename' or 'order' update here
+                if (!id) {
+                    return res.status(400).json({ message: 'Image ID is required for update.' });
+                }
+
+                const index = images.findIndex(img => img.id === id);
+                if (index === -1) {
+                    return res.status(404).json({ message: 'Image not found.' });
+                }
+
+                if (altText !== undefined) images[index].altText = altText;
+                if (category !== undefined) images[index].category = category;
+                // Note: We don't allow filename or order change via this singular PUT.
+                // Order is handled by the batch PUT; filename would require Cloudinary API rename.
+
+                await writeImagesData(images);
+                res.status(200).json({ message: 'Image metadata updated successfully!', image: images[index] });
             }
-
-            // Only update fields that are provided
-            if (filename) images[index].filename = filename; // Note: This doesn't rename the file
-            if (altText !== undefined) images[index].altText = altText;
-            if (category !== undefined) images[index].category = category;
-            if (order !== undefined) images[index].order = parseInt(order, 10);
-
-            await writeImagesData(images);
-            res.status(200).json({ message: 'Image updated successfully!', image: images[index] });
 
         } catch (error) {
-            console.error('Error updating image:', error);
-            res.status(500).json({ message: 'Failed to update image.', error: error.message });
+            console.error('Error updating/reordering images:', error);
+            res.status(500).json({ message: 'Failed to update/reorder images.', error: error.message });
         }
 
     } else if (req.method === 'DELETE') { // Delete Image
         try {
-            const { id } = JSON.parse(req.body); // Expecting ID in the body for DELETE
+            const { id } = JSON.parse(req.body);
             if (!id) {
                 return res.status(400).json({ message: 'Image ID is required for deletion.' });
             }
@@ -142,17 +205,19 @@ module.exports = async (req, res) => {
                 return res.status(404).json({ message: 'Image not found.' });
             }
 
+            // Delete from Cloudinary
+            if (imageToDelete.cloudinaryPublicId) {
+                try {
+                    await cloudinary.uploader.destroy(imageToDelete.cloudinaryPublicId);
+                    console.log(`Cloudinary image ${imageToDelete.cloudinaryPublicId} deleted.`);
+                } catch (cloudinaryError) {
+                    console.warn(`Failed to delete image from Cloudinary (${imageToDelete.cloudinaryPublicId}): ${cloudinaryError.message}`);
+                    // Log the warning but don't stop the process, as data should still be removed
+                }
+            }
+
             const newImages = images.filter(img => img.id !== id);
             await writeImagesData(newImages);
-
-            // Delete the physical file
-            const filePath = path.join(IMAGES_DIR, imageToDelete.filename);
-            try {
-                await fs.unlink(filePath);
-            } catch (fileError) {
-                console.warn(`Could not delete physical file ${filePath}: ${fileError.message}`);
-                // Don't fail the entire request if file deletion fails, as data is already removed
-            }
 
             res.status(200).json({ message: 'Image deleted successfully!', id });
 
