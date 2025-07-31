@@ -16,7 +16,7 @@ cloudinary.config({
 // --- Supabase PostgreSQL Configuration ---
 // The connection string is provided via Vercel Environment Variables.
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Use the environment variable set on Vercel
+  connectionString: process.env.SUPABASE_DB_URL, // Use the environment variable set on Vercel
   ssl: {
     // This is often required for connecting to external databases like Supabase
     // from Vercel's serverless environment, as Vercel's functions might not
