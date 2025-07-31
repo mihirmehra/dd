@@ -15,8 +15,6 @@ cloudinary.config({
 });
 
 // --- MongoDB Configuration ---
-// This environment variable MUST be set in your Vercel project settings.
-// It will be process.env.MONGODB_URI.
 console.log('DEBUG: MONGODB_URI from environment:', process.env.MONGODB_URI ? 'Loaded' : 'Undefined/Empty');
 
 const uri = process.env.MONGODB_URI;
@@ -40,6 +38,17 @@ async function connectToMongoDB() {
   }
 }
 
+// Helper function to upload buffer to Cloudinary (THIS IS THE MISSING/FIXED PART)
+function uploadToCloudinary(buffer, options) {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        });
+        streamifier.createReadStream(buffer).pipe(uploadStream);
+    });
+}
+
 // --- Database Operations ---
 
 /**
@@ -49,13 +58,8 @@ async function connectToMongoDB() {
 async function readImagesFromDb() {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
-    // Find all documents, sort by 'order' and 'uploadDate'
-    // Convert _id to id to match frontend expectation (UUID)
     const images = await collection.find({}).sort({ order: 1, uploadDate: 1 }).toArray();
     return images.map(img => {
-        // MongoDB uses _id, but our frontend expects 'id' (UUID)
-        // If we store UUIDs directly as _id, this step might be simpler.
-        // For now, assuming 'id' field stores the UUID.
         return {
             ...img,
             id: img.id || img._id.toString() // Prefer explicit 'id', fallback to _id string
@@ -100,8 +104,6 @@ async function deleteImageFromDb(id) {
 
 // Main serverless function handler
 module.exports = async (req, res) => {
-    // Connect to DB once at the start of each request if not already connected
-    // This is fine for serverless; the connection is typically cached or established quickly.
     try {
         await connectToMongoDB();
     } catch (error) {
