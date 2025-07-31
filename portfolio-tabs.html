@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Portfolio with Tabs</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; color: #333; line-height: 1.6; }
+        .portfolio-header { text-align: center; margin-bottom: 40px; padding: 20px; background-color: #fff; border-bottom: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .portfolio-header h1 { color: #007bff; margin-bottom: 10px; }
+        .portfolio-header p { color: #555; font-size: 1.1em; }
+
+        .tabs-container { max-width: 1200px; margin: 0 auto 30px auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; background-color: #f9f9f9; }
+        .tab-button {
+            flex-grow: 1; padding: 15px 20px; text-align: center; cursor: pointer; border: none;
+            background-color: transparent; color: #555; font-size: 1.1em; font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .tab-button:hover { background-color: #eee; color: #007bff; }
+        .tab-button.active {
+            background-color: #007bff; color: white; border-bottom: 3px solid #0056b3;
+            transform: translateY(1px);
+        }
+
+        .tab-content { padding: 20px; }
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto; /* No margin on this, as it's inside tab-content */
+            padding: 0;
+        }
+        .portfolio-item {
+            background-color: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .portfolio-item:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .portfolio-item img {
+            width: 100%; height: 220px; object-fit: cover; display: block; border-bottom: 1px solid #eee;
+        }
+        .portfolio-item-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .portfolio-item h3 { margin-top: 0; margin-bottom: 10px; color: #007bff; font-size: 1.2em; }
+        .portfolio-item p { margin: 0; font-size: 0.9em; color: #666; word-wrap: break-word; }
+
+        .loading-message, .error-message, .no-images-message {
+            text-align: center;
+            grid-column: 1 / -1; /* Make it span across all columns in grid context */
+            padding: 50px;
+            font-size: 1.2em;
+            color: #555;
+        }
+        .error-message { color: #dc3545; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .portfolio-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+            .portfolio-item img { height: 180px; }
+            .tab-button { padding: 12px 15px; font-size: 1em; }
+        }
+        @media (max-width: 480px) {
+            .portfolio-grid { grid-template-columns: 1fr; gap: 15px; }
+            .portfolio-item img { height: 150px; }
+            body { padding: 10px; }
+            .tabs { flex-wrap: wrap; }
+            .tab-button { width: 100%; } /* Stack tabs vertically on small screens */
+        }
+    </style>
+</head>
+<body>
+    <header class="portfolio-header">
+        <h1>Our Dynamic Portfolio</h1>
+        <p>Browse our projects by category.</p>
+    </header>
+
+    <main class="tabs-container">
+        <div class="tabs" id="portfolioTabs">
+            <button class="tab-button active" data-category="All">All</button>
+            </div>
+
+        <div class="tab-content" id="tabContent">
+            <div class="loading-message">Loading portfolio images...</div>
+            </div>
+    </main>
+
+    <script>
+        const portfolioTabs = document.getElementById('portfolioTabs');
+        const tabContent = document.getElementById('tabContent');
+        let allImages = []; // Stores all images fetched from the API
+
+        async function fetchAndRenderImages() {
+            try {
+                const response = await fetch('/api/images'); // Fetch from our new API endpoint
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                allImages = await response.json(); // Store all images
+                renderTabsAndContent(allImages);
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                tabContent.innerHTML = `<div class="error-message">Failed to load portfolio images. Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderTabsAndContent(images) {
+            const categories = ['All']; // Start with 'All' tab
+            const categorizedImages = { 'All': [...images] }; // 'All' gets all images
+
+            // Populate categories and categorize images
+            images.forEach(img => {
+                const category = img.category || 'Uncategorized';
+                if (!categories.includes(category)) {
+                    categories.push(category);
+                }
+                if (!categorizedImages[category]) {
+                    categorizedImages[category] = [];
+                }
+                categorizedImages[category].push(img);
+            });
+
+            // Render Tab Buttons
+            portfolioTabs.innerHTML = ''; // Clear existing tabs
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.classList.add('tab-button');
+                button.dataset.category = category;
+                button.textContent = category;
+                button.addEventListener('click', () => switchTab(category));
+                portfolioTabs.appendChild(button);
+            });
+
+            // Activate 'All' tab by default
+            const allButton = portfolioTabs.querySelector('[data-category="All"]');
+            if (allButton) {
+                allButton.classList.add('active');
+            }
+            displayImagesForCategory('All'); // Display 'All' images initially
+        }
+
+        function displayImagesForCategory(selectedCategory) {
+            tabContent.innerHTML = ''; // Clear previous content
+            const imagesToDisplay = allImages.filter(img =>
+                selectedCategory === 'All' || (img.category === selectedCategory || (!img.category && selectedCategory === 'Uncategorized'))
+            );
+
+            if (imagesToDisplay.length === 0) {
+                tabContent.innerHTML = `<div class="no-images-message"><p>No images found in the '${selectedCategory}' category.</p></div>`;
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.classList.add('portfolio-grid');
+
+            imagesToDisplay.forEach(image => {
+                const portfolioItem = document.createElement('div');
+                portfolioItem.classList.add('portfolio-item');
+
+                const imgElement = document.createElement('img');
+                imgElement.src = `assets/img/${image.filename}`;
+                imgElement.alt = image.altText;
+
+                const infoDiv = document.createElement('div');
+                infoDiv.classList.add('portfolio-item-info');
+
+                const headingElement = document.createElement('h3');
+                headingElement.textContent = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+                const imgNameParagraph = document.createElement('p');
+                imgNameParagraph.textContent = `Category: ${image.category || 'Uncategorized'}`;
+
+                infoDiv.appendChild(headingElement);
+                infoDiv.appendChild(imgNameParagraph);
+
+                portfolioItem.appendChild(imgElement);
+                portfolioItem.appendChild(infoDiv);
+                grid.appendChild(portfolioItem);
+            });
+
+            tabContent.appendChild(grid);
+        }
+
+        function switchTab(category) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Add active class to the clicked button
+            const activeBtn = document.querySelector(`.tab-button[data-category="${category}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+            displayImagesForCategory(category);
+        }
+
+        // Initial fetch and render on page load
+        fetchAndRenderImages();
+    </script>
+</body>
+</html>

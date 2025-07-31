@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "nodemailer": "^6.10.1"
+    "formidable": "^3.5.4",
+    "nodemailer": "^6.10.1",
+    "uuid": "^11.1.0"
   }
 }
