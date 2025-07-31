@@ -73,9 +73,11 @@
 
     <header class="bg-white shadow-sm py-4 z-50 sticky top-0">
         <nav class="container mx-auto flex justify-between items-center px-4 lg:px-0">
-            <a href="index.html" class="text-3xl font-bold text-primary flex items-center gap-2">
-                <img src="assets/img/favicon.png" alt="DesignDuet Logo" class="h-8 w-8"> DesignDuet
-            </a>
+            <div class="flex items-center">
+                <a href="/">
+                    <img class="brand-logo" src="assets/img/logo.png" alt="DesignDuet" style="width: 250px;">
+                </a>
+            </div>
             <div class="hidden lg:flex space-x-8 items-center">
                 <a href="index.html" class="text-lg font-medium text-gray-600 hover:text-primary transition-colors">Home</a>
                 <a href="portfolio-tabs.html" class="text-lg font-medium text-primary hover:text-primary transition-colors">Portfolio</a>
@@ -128,16 +130,21 @@
                         <option value="Uncategorized">Uncategorized</option>
                     </select>
                 </div>
-                <button type="submit"
-                        class="bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300 w-full sm:w-auto">
-                    Upload Image(s)
+                <button type="submit" id="uploadBtn"
+                        class="bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300 w-full sm:w-auto flex items-center justify-center">
+                    <span id="uploadBtnText">Upload Image(s)</span>
+                    <i id="uploadBtnSpinner" class="ri-loader-4-line animate-spin ml-2 hidden"></i>
                 </button>
             </form>
         </div>
 
-        <div class="image-list bg-white rounded-xl shadow-custom-light p-6">
+        <div class="image-list-section bg-white rounded-xl shadow-custom-light p-6">
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Existing Images (Drag to Reorder)</h2>
-            <ul id="imageList" class="space-y-4">
+
+            <div class="flex flex-wrap border-b border-gray-200 bg-gray-50 mb-6" id="managerTabs">
+                </div>
+
+            <ul id="imageList" class="space-y-4 min-h-[100px] border border-dashed border-gray-300 p-4 rounded-md">
                 <p class="text-center text-gray-600">Loading images...</p>
             </ul>
             <button id="saveOrderBtn" style="display:none;"
@@ -186,8 +193,12 @@
 
     <footer class="bg-gray-900 text-white py-10 mt-auto">
         <div class="container mx-auto px-4 lg:px-0 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="flex items-center mb-6">
+                <a href="/">
+                    <img class="brand-logo" src="assets/img/logo-w.png" alt="DesignDuet" style="width: 250px;">
+                </a>
+            </div>
             <div>
-                <h3 class="text-2xl font-bold text-primary mb-4">DesignDuet</h3>
                 <p class="text-gray-400 text-sm">Crafting digital experiences that captivate and convert. Your vision, our expertise, a masterpiece achieved.</p>
             </div>
             <div>
@@ -225,7 +236,7 @@
         const imageUploadForm = document.getElementById('imageUploadForm');
         const imageFile = document.getElementById('imageFile');
         const altText = document.getElementById('altText');
-        const categorySelect = document.getElementById('category'); // Renamed for clarity
+        const categorySelect = document.getElementById('category');
         const imageList = document.getElementById('imageList');
         const statusMessage = document.getElementById('statusMessage');
         const saveOrderBtn = document.getElementById('saveOrderBtn');
@@ -234,9 +245,23 @@
         const editImageForm = document.getElementById('editImageForm');
         const editImageId = document.getElementById('editImageId');
         const editAltText = document.getElementById('editAltText');
-        const editCategorySelect = document.getElementById('editCategory'); // Renamed for clarity
+        const editCategorySelect = document.getElementById('editCategory');
 
-        let currentImages = []; // To store the current state of images
+        const managerTabs = document.getElementById('managerTabs');
+
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadBtnText = document.getElementById('uploadBtnText');
+        const uploadBtnSpinner = document.getElementById('uploadBtnSpinner');
+
+        // This is the ONLY place sortableInstance should be declared with 'let'
+        let sortableInstance; 
+        
+        let allImages = [];
+        let currentActiveCategory = 'All';
+        
+
+        const FIXED_CATEGORIES = ["Web Designs", "Graphic Designs", "Printing Designs", "3D Designs"];
+
 
         // Mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -257,11 +282,25 @@
             } else if (type === 'error') {
                 statusMessage.classList.add('bg-red-100', 'text-red-700');
             }
-            statusMessage.style.display = 'block'; // Ensure display is block
+            statusMessage.style.display = 'block';
             setTimeout(() => {
-                statusMessage.style.display = 'none'; // Hide after 5 seconds
-                statusMessage.classList.add('hidden'); // Add hidden class back
+                statusMessage.style.display = 'none';
+                statusMessage.classList.add('hidden');
             }, 5000);
+        }
+
+        function setUploadButtonLoadingState(isLoading) {
+            if (isLoading) {
+                uploadBtn.disabled = true;
+                uploadBtn.classList.add('opacity-70', 'cursor-not-allowed');
+                uploadBtnText.textContent = 'Uploading...';
+                uploadBtnSpinner.classList.remove('hidden');
+            } else {
+                uploadBtn.disabled = false;
+                uploadBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                uploadBtnText.textContent = 'Upload Image(s)';
+                uploadBtnSpinner.classList.add('hidden');
+            }
         }
 
         // --- Fetch and Display Images ---
@@ -271,10 +310,13 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                const images = await response.json();
-                currentImages = images; // Store fetched images
-                renderImageList(images);
-                saveOrderBtn.style.display = images.length > 0 ? 'block' : 'none';
+                allImages = await response.json();
+                
+                allImages.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                renderManagerTabs(allImages);
+                displayImagesForCategory(currentActiveCategory);
+                saveOrderBtn.style.display = allImages.length > 0 ? 'block' : 'none';
             } catch (error) {
                 console.error('Error fetching images:', error);
                 imageList.innerHTML = `<p class="text-center text-red-500">Failed to load images: ${error.message}</p>`;
@@ -282,22 +324,73 @@
             }
         }
 
-        function renderImageList(images) {
-            imageList.innerHTML = ''; // Clear existing list items
-            if (images.length === 0) {
-                imageList.innerHTML = '<p class="text-center text-gray-600">No images uploaded yet.</p>';
+        function renderManagerTabs(images) {
+            const categoriesToDisplay = ['All', ...FIXED_CATEGORIES];
+
+            managerTabs.innerHTML = '';
+            categoriesToDisplay.forEach(category => {
+                const button = document.createElement('button');
+                button.classList.add(
+                    'manager-tab-button',
+                    'flex-grow', 'py-3', 'px-4', 'text-center', 'cursor-pointer', 'border-b-2',
+                    'border-transparent', 'text-gray-600', 'font-semibold', 'text-md',
+                    'hover:bg-gray-100', 'hover:text-primary', 'transition-all', 'duration-300'
+                );
+                button.dataset.category = category;
+                button.textContent = category;
+                button.addEventListener('click', () => switchManagerTab(category));
+                managerTabs.appendChild(button);
+            });
+
+            const activeBtn = managerTabs.querySelector(`[data-category="${currentActiveCategory}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'border-primary', 'bg-white', 'text-primary');
+            }
+        }
+
+        function switchManagerTab(category) {
+            currentActiveCategory = category;
+            document.querySelectorAll('.manager-tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-primary', 'bg-white', 'text-primary');
+                btn.classList.add('border-transparent', 'bg-gray-50', 'text-gray-600');
+            });
+            const activeBtn = document.querySelector(`.manager-tab-button[data-category="${category}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'bg-gray-50', 'text-gray-600');
+                activeBtn.classList.add('active', 'border-primary', 'bg-white', 'text-primary');
+            }
+            displayImagesForCategory(category);
+        }
+
+
+        function displayImagesForCategory(selectedCategory) {
+            imageList.innerHTML = '';
+
+            const imagesToDisplay = allImages.filter(img => {
+                const imgCategory = img.category || 'Uncategorized';
+                if (selectedCategory === 'All') {
+                    return true;
+                } else {
+                    return imgCategory === selectedCategory;
+                }
+            });
+
+            if (imagesToDisplay.length === 0) {
+                imageList.innerHTML = `<p class="text-center py-10 text-lg text-gray-600">No images found in the '${selectedCategory}' category.</p>`;
+                saveOrderBtn.style.display = 'none';
+                if (sortableInstance) sortableInstance.destroy();
                 return;
             }
 
-            images.forEach(image => {
+            imagesToDisplay.forEach(image => {
                 const li = document.createElement('li');
                 li.classList.add(
-                    'image-item', // Custom class for JS targeting
+                    'image-item',
                     'flex', 'items-center', 'border', 'border-gray-200', 'p-4', 'mb-3',
                     'bg-white', 'rounded-md', 'shadow-sm', 'transition-all', 'duration-200',
                     'hover:shadow-md'
                 );
-                li.dataset.id = image.id; // Store image ID for drag & drop and actions
+                li.dataset.id = image.id;
 
                 li.innerHTML = `
                     <img src="${image.imageUrl}" alt="${image.altText || image.filename}" class="w-20 h-20 object-cover mr-4 rounded-md border border-gray-100">
@@ -314,8 +407,10 @@
                 `;
                 imageList.appendChild(li);
             });
-            initializeSortable(); // Re-initialize SortableJS after rendering images
+            initializeSortable();
+            saveOrderBtn.style.display = 'block';
         }
+
 
         // --- Handle Image Upload ---
         imageUploadForm.addEventListener('submit', async (e) => {
@@ -327,6 +422,8 @@
                 return;
             }
 
+            setUploadButtonLoadingState(true);
+
             const altTextValue = altText.value;
             const categoryValue = categorySelect.value;
 
@@ -334,8 +431,8 @@
             for (let i = 0; i < files.length; i++) {
                 const formData = new FormData();
                 formData.append('image', files[i]);
-                formData.append('altText', altTextValue); // Apply same alt text
-                formData.append('category', categoryValue); // Apply same category
+                formData.append('altText', altTextValue);
+                formData.append('category', categoryValue);
 
                 uploadPromises.push(
                     fetch('/api/images', {
@@ -355,22 +452,25 @@
                 );
             }
 
-            // Wait for all uploads to complete
-            const results = await Promise.all(uploadPromises);
+            try {
+                const results = await Promise.all(uploadPromises);
 
-            const successfulUploads = results.filter(r => r.success !== false).length;
-            const failedUploads = results.length - successfulUploads;
+                const successfulUploads = results.filter(r => r.success !== false).length;
+                const failedUploads = results.length - successfulUploads;
 
-            if (successfulUploads > 0 && failedUploads === 0) {
-                showStatus(`Successfully uploaded ${successfulUploads} image(s)!`, 'success');
-            } else if (successfulUploads > 0 && failedUploads > 0) {
-                showStatus(`Uploaded ${successfulUploads} image(s), but ${failedUploads} failed. Check console for details.`, 'error');
-            } else {
-                showStatus(`All ${failedUploads} image(s) failed to upload.`, 'error');
+                if (successfulUploads > 0 && failedUploads === 0) {
+                    showStatus(`Successfully uploaded ${successfulUploads} image(s)!`, 'success');
+                } else if (successfulUploads > 0 && failedUploads > 0) {
+                    showStatus(`Uploaded ${successfulUploads} image(s), but ${failedUploads} failed. Check console for details.`, 'error');
+                } else {
+                    showStatus(`All ${failedUploads} image(s) failed to upload.`, 'error');
+                }
+                
+                imageUploadForm.reset();
+                await fetchImages();
+            } finally {
+                setUploadButtonLoadingState(false);
             }
-            
-            imageUploadForm.reset(); // Clear the form
-            await fetchImages(); // Refresh the image list
         });
 
         // --- Handle Image Edit & Delete (using Event Delegation) ---
@@ -401,18 +501,17 @@
                     showStatus(`Deletion failed: ${error.message}`, 'error');
                 }
             } else if (target.classList.contains('edit-btn')) {
-                const imageToEdit = currentImages.find(img => img.id === id);
+                const imageToEdit = allImages.find(img => img.id === id);
                 if (imageToEdit) {
                     editImageId.value = imageToEdit.id;
                     editAltText.value = imageToEdit.altText || '';
-                    editCategorySelect.value = imageToEdit.category || 'Uncategorized'; // Set default if null/undefined
+                    editCategorySelect.value = imageToEdit.category || 'Uncategorized';
                     editImageModal.style.display = 'flex';
                 }
             }
         });
 
         // --- Handle Modal Close ---
-        // Using event delegation for modal close buttons
         document.querySelectorAll('.close-button').forEach(button => {
             button.addEventListener('click', () => {
                 editImageModal.style.display = 'none';
@@ -430,7 +529,7 @@
             e.preventDefault();
             const id = editImageId.value;
             const altText = editAltText.value;
-            const category = editCategorySelect.value; // Get value from select
+            const category = editCategorySelect.value;
 
             try {
                 const response = await fetch('/api/images', {
@@ -452,12 +551,12 @@
         });
 
         // --- SortableJS for Reordering Images ---
-        let sortableInstance;
         function initializeSortable() {
             if (sortableInstance) {
                 sortableInstance.destroy();
             }
-            sortableInstance = new Sortable(imageList, {
+            // Correct: Assign to the already declared 'sortableInstance' variable
+            sortableInstance = new Sortable(imageList, { 
                 animation: 150,
                 ghostClass: 'sortable-ghost',
                 onEnd: function (evt) {
@@ -468,7 +567,7 @@
 
         // --- Save New Order Button ---
         saveOrderBtn.addEventListener('click', async () => {
-            const newOrder = Array.from(imageList.children).map((item, index) => ({
+            const newOrderUpdates = Array.from(imageList.children).map((item, index) => ({
                 id: item.dataset.id,
                 order: index + 1
             }));
@@ -477,7 +576,7 @@
                 const response = await fetch('/api/images', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ updates: newOrder }),
+                    body: JSON.stringify({ updates: newOrderUpdates }),
                 });
                 const result = await response.json();
                 if (!response.ok) {
