@@ -73,11 +73,9 @@
 
     <header class="bg-white shadow-sm py-4 z-50 sticky top-0">
         <nav class="container mx-auto flex justify-between items-center px-4 lg:px-0">
-            <div class="flex items-center">
-                <a href="/">
-                    <img class="brand-logo" src="assets/img/logo.png" alt="DesignDuet" style="width: 250px;">>
-                </a>
-            </div>
+            <a href="index.html" class="text-3xl font-bold text-primary flex items-center gap-2">
+                <img src="assets/img/favicon.png" alt="DesignDuet Logo" class="h-8 w-8"> DesignDuet
+            </a>
             <div class="hidden lg:flex space-x-8 items-center">
                 <a href="index.html" class="text-lg font-medium text-gray-600 hover:text-primary transition-colors">Home</a>
                 <a href="portfolio-tabs.html" class="text-lg font-medium text-primary hover:text-primary transition-colors">Portfolio</a>
@@ -106,21 +104,21 @@
         <h1 class="text-4xl font-extrabold text-primary text-center mb-8">Image Manager</h1>
 
         <div class="form-section bg-white rounded-xl shadow-custom-light p-6 mb-8 border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Add New Image</h2>
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Add New Image(s)</h2>
             <div id="statusMessage" class="hidden mt-4 p-3 rounded text-center text-sm" role="alert"></div>
             <form id="imageUploadForm" class="space-y-4">
                 <div class="form-group">
-                    <label for="imageFile" class="block text-gray-700 text-sm font-bold mb-2">Image File:</label>
-                    <input type="file" id="imageFile" name="image" accept="image/*" required
+                    <label for="imageFile" class="block text-gray-700 text-sm font-bold mb-2">Image File(s):</label>
+                    <input type="file" id="imageFile" name="image" accept="image/*" multiple required
                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-opacity-90">
                 </div>
                 <div class="form-group">
-                    <label for="altText" class="block text-gray-700 text-sm font-bold mb-2">Alt Text (Optional):</label>
-                    <input type="text" id="altText" name="altText" placeholder="Describe the image for accessibility"
+                    <label for="altText" class="block text-gray-700 text-sm font-bold mb-2">Alt Text (Optional, applied to all selected images):</label>
+                    <input type="text" id="altText" name="altText" placeholder="Describe the images for accessibility"
                            class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-primary">
                 </div>
                 <div class="form-group">
-                    <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category/Tab (e.g., Web Designs, Graphic Designs):</label>
+                    <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category/Tab (applied to all selected images):</label>
                     <select id="category" name="category"
                             class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-primary">
                         <option value="Web Designs">Web Designs</option>
@@ -132,7 +130,7 @@
                 </div>
                 <button type="submit"
                         class="bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-all duration-300 w-full sm:w-auto">
-                    Upload Image
+                    Upload Image(s)
                 </button>
             </form>
         </div>
@@ -188,12 +186,8 @@
 
     <footer class="bg-gray-900 text-white py-10 mt-auto">
         <div class="container mx-auto px-4 lg:px-0 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="flex items-center mb-6">
-                <a href="/">
-                    <img class="brand-logo" src="assets/img/logo-w.png" alt="DesignDuet" style="width: 250px;">>
-                </a>
-            </div>
             <div>
+                <h3 class="text-2xl font-bold text-primary mb-4">DesignDuet</h3>
                 <p class="text-gray-400 text-sm">Crafting digital experiences that captivate and convert. Your vision, our expertise, a masterpiece achieved.</p>
             </div>
             <div>
@@ -326,27 +320,57 @@
         // --- Handle Image Upload ---
         imageUploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(imageUploadForm);
 
-            try {
-                const response = await fetch('/api/images', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.message || 'Upload failed');
-                }
-
-                showStatus('Image uploaded successfully!', 'success');
-                imageUploadForm.reset(); // Clear the form
-                await fetchImages(); // Refresh the image list
-            } catch (error) {
-                console.error('Upload Error:', error);
-                showStatus(`Upload failed: ${error.message}`, 'error');
+            const files = imageFile.files;
+            if (files.length === 0) {
+                showStatus('Please select at least one image file.', 'error');
+                return;
             }
+
+            const altTextValue = altText.value;
+            const categoryValue = categorySelect.value;
+
+            const uploadPromises = [];
+            for (let i = 0; i < files.length; i++) {
+                const formData = new FormData();
+                formData.append('image', files[i]);
+                formData.append('altText', altTextValue); // Apply same alt text
+                formData.append('category', categoryValue); // Apply same category
+
+                uploadPromises.push(
+                    fetch('/api/images', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => Promise.reject(new Error(err.message || 'Upload failed')));
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                        console.error(`Upload error for file ${files[i].name}:`, error);
+                        return { success: false, filename: files[i].name, error: error.message };
+                    })
+                );
+            }
+
+            // Wait for all uploads to complete
+            const results = await Promise.all(uploadPromises);
+
+            const successfulUploads = results.filter(r => r.success !== false).length;
+            const failedUploads = results.length - successfulUploads;
+
+            if (successfulUploads > 0 && failedUploads === 0) {
+                showStatus(`Successfully uploaded ${successfulUploads} image(s)!`, 'success');
+            } else if (successfulUploads > 0 && failedUploads > 0) {
+                showStatus(`Uploaded ${successfulUploads} image(s), but ${failedUploads} failed. Check console for details.`, 'error');
+            } else {
+                showStatus(`All ${failedUploads} image(s) failed to upload.`, 'error');
+            }
+            
+            imageUploadForm.reset(); // Clear the form
+            await fetchImages(); // Refresh the image list
         });
 
         // --- Handle Image Edit & Delete (using Event Delegation) ---

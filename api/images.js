@@ -3,8 +3,8 @@ const { IncomingForm } = require('formidable');
 const { v4: uuidv4 } = require('uuid');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
-const { MongoClient, ObjectId } = require('mongodb'); // Import MongoDB client
-const fs = require('fs/promises'); // For handling temporary files from formidable
+const { MongoClient, ObjectId } = require('mongodb');
+const fs = require('fs/promises');
 
 // --- Cloudinary Configuration ---
 cloudinary.config({
@@ -19,14 +19,13 @@ console.log('DEBUG: MONGODB_URI from environment:', process.env.MONGODB_URI ? 'L
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-const dbName = 'portfolio_db'; // Explicitly define your database name here
+const dbName = 'portfolio_db';
 
 let dbConnected = false;
 
-// Function to connect to MongoDB. Call this once.
 async function connectToMongoDB() {
   if (dbConnected) {
-    return; // Already connected
+    return;
   }
   try {
     await client.connect();
@@ -34,11 +33,10 @@ async function connectToMongoDB() {
     dbConnected = true;
   } catch (error) {
     console.error("Failed to connect to MongoDB:", error);
-    throw error; // Re-throw to indicate connection failure
+    throw error;
   }
 }
 
-// Helper function to upload buffer to Cloudinary (THIS IS THE MISSING/FIXED PART)
 function uploadToCloudinary(buffer, options) {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
@@ -51,10 +49,6 @@ function uploadToCloudinary(buffer, options) {
 
 // --- Database Operations ---
 
-/**
- * Reads all images from the MongoDB collection.
- * @returns {Array} An array of image objects.
- */
 async function readImagesFromDb() {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
@@ -62,43 +56,27 @@ async function readImagesFromDb() {
     return images.map(img => {
         return {
             ...img,
-            id: img.id || img._id.toString() // Prefer explicit 'id', fallback to _id string
+            id: img.id || img._id.toString()
         };
     });
 }
 
-/**
- * Inserts a new image record into the MongoDB collection.
- * @param {Object} image - The image object to insert.
- */
 async function insertImageToDb(image) {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
-    // Use the UUID 'id' directly as MongoDB's _id for simpler lookups later
     const docToInsert = { ...image, _id: image.id };
     await collection.insertOne(docToInsert);
 }
 
-/**
- * Updates an existing image's metadata (altText, category, order) in the database.
- * @param {string} id - The ID (UUID) of the image to update.
- * @param {Object} updates - An object containing fields to update.
- */
 async function updateImageInDb(id, updates) {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
-    // Find by the custom 'id' field (which we are storing as _id)
     await collection.updateOne({ _id: id }, { $set: updates });
 }
 
-/**
- * Deletes an image record from the MongoDB collection.
- * @param {string} id - The ID (UUID) of the image to delete.
- */
 async function deleteImageFromDb(id) {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
-    // Delete by the custom 'id' field (which we are storing as _id)
     await collection.deleteOne({ _id: id });
 }
 
@@ -110,10 +88,10 @@ module.exports = async (req, res) => {
         return res.status(500).json({ message: 'Database connection failed.', error: error.message });
     }
 
-    if (req.method === 'POST') { // Add Image (Upload)
+    if (req.method === 'POST') { // Add Image(s) (Upload)
         const form = new IncomingForm({
-            maxFileSize: 20 * 1024 * 1024, // 20MB limit for uploads
-            multiples: false,
+            maxFileSize: 20 * 1024 * 1024, // 20MB limit per file
+            multiples: true, // IMPORTANT: Allows multiple file uploads
             allowEmptyFiles: false,
             minFileSize: 1
         });
@@ -121,67 +99,89 @@ module.exports = async (req, res) => {
         form.parse(req, async (err, fields, files) => {
             if (err) {
                 console.error('Formidable Error parsing form (file upload issue):', err);
-                let message = 'Error uploading image.';
+                let message = 'Error uploading image(s).';
                 if (err.code === 1009) message = 'File size too large.';
                 if (err.code === 1001) message = 'No file received or file is empty.';
                 return res.status(400).json({ message, error: err.message });
             }
 
-            const imageFile = files.image && files.image[0];
-
-            if (!imageFile) {
-                return res.status(400).json({ message: 'No image file provided.' });
-            }
-
-            let fileBuffer;
-            try {
-                fileBuffer = await fs.readFile(imageFile.filepath);
-            } catch (readErr) {
-                console.error('FS Error reading temporary file:', readErr);
-                return res.status(500).json({ message: 'Failed to read uploaded file.', error: readErr.message });
+            const imageFiles = files.image || []; // This will be an array now
+            if (!Array.isArray(imageFiles) || imageFiles.length === 0) {
+                return res.status(400).json({ message: 'No image file(s) provided.' });
             }
 
             const altText = fields.altText && fields.altText[0] ? fields.altText[0] : '';
             const category = fields.category && fields.category[0] ? fields.category[0] : 'Uncategorized';
-            const originalFilename = imageFile.originalFilename;
 
-            try {
-                const cloudinaryUploadResult = await uploadToCloudinary(fileBuffer, {
-                    folder: 'portfolio_images',
-                    public_id: `portfolio-${uuidv4()}-${path.parse(originalFilename).name}`,
-                    resource_type: 'image',
-                    altText: altText
+            const results = [];
+            const existingImages = await readImagesFromDb(); // Get existing images once
+            let maxOrder = existingImages.length > 0 ? Math.max(...existingImages.map(img => img.order || 0)) : 0;
+
+
+            for (const imageFile of imageFiles) {
+                let fileBuffer;
+                try {
+                    fileBuffer = await fs.readFile(imageFile.filepath);
+                } catch (readErr) {
+                    console.error(`FS Error reading temporary file ${imageFile.originalFilename}:`, readErr);
+                    results.push({ filename: imageFile.originalFilename, success: false, error: 'Failed to read file.' });
+                    await fs.unlink(imageFile.filepath).catch(() => {});
+                    continue; // Skip to next file
+                }
+
+                try {
+                    const originalFilename = imageFile.originalFilename;
+                    const cloudinaryUploadResult = await uploadToCloudinary(fileBuffer, {
+                        folder: 'portfolio_images',
+                        public_id: `portfolio-${uuidv4()}-${path.parse(originalFilename).name}`,
+                        resource_type: 'image',
+                        altText: altText // Apply global altText to each image
+                    });
+
+                    // Clean up temp file
+                    await fs.unlink(imageFile.filepath).catch(unlinkErr => {
+                        console.warn(`Could not delete temporary file ${imageFile.filepath}: ${unlinkErr.message}`);
+                    });
+                    
+                    maxOrder++; // Increment order for each new image
+                    const newId = uuidv4();
+                    const newImage = {
+                        id: newId,
+                        filename: originalFilename,
+                        cloudinaryPublicId: cloudinaryUploadResult.public_id,
+                        imageUrl: cloudinaryUploadResult.secure_url,
+                        altText: altText || originalFilename.split('.')[0].replace(/[-_]/g, ' '),
+                        category: category, // Apply global category to each image
+                        order: maxOrder,
+                        uploadDate: new Date().toISOString()
+                    };
+
+                    await insertImageToDb(newImage);
+                    results.push({ filename: originalFilename, success: true, image: newImage });
+
+                } catch (error) {
+                    console.error(`API Error: Failed to upload ${imageFile.originalFilename} to Cloudinary or save to DB:`, error);
+                    results.push({ filename: imageFile.originalFilename, success: false, error: error.message });
+                    await fs.unlink(imageFile.filepath).catch(() => {}); // Clean up temp file on error
+                }
+            }
+
+            const successfulUploads = results.filter(r => r.success).length;
+            const failedUploads = results.length - successfulUploads;
+
+            if (successfulUploads === results.length) {
+                res.status(201).json({ message: `Successfully uploaded ${successfulUploads} image(s)!`, results });
+            } else if (successfulUploads > 0) {
+                res.status(207).json({ // 207 Multi-Status
+                    message: `Uploaded ${successfulUploads} image(s), but ${failedUploads} failed.`,
+                    results
                 });
-
-                await fs.unlink(imageFile.filepath).catch(unlinkErr => {
-                    console.warn(`Could not delete temporary file ${imageFile.filepath}: ${unlinkErr.message}`);
-                });
-
-                const images = await readImagesFromDb();
-                const newId = uuidv4();
-                const newImage = {
-                    id: newId, // Storing UUID in 'id' field
-                    filename: originalFilename,
-                    cloudinaryPublicId: cloudinaryUploadResult.public_id,
-                    imageUrl: cloudinaryUploadResult.secure_url,
-                    altText: altText || originalFilename.split('.')[0].replace(/[-_]/g, ' '),
-                    category: category,
-                    order: images.length > 0 ? Math.max(...images.map(img => img.order || 0)) + 1 : 1,
-                    uploadDate: new Date().toISOString()
-                };
-
-                await insertImageToDb(newImage);
-
-                res.status(201).json({ message: 'Image uploaded to Cloudinary and data saved successfully!', image: newImage });
-
-            } catch (error) {
-                console.error('API Error: Failed to upload to Cloudinary or save to DB:', error);
-                await fs.unlink(imageFile.filepath).catch(() => {}); // Clean up temp file on error
-                return res.status(500).json({ message: 'Failed to process image upload.', error: error.message });
+            } else {
+                res.status(500).json({ message: `All ${failedUploads} image(s) failed to upload.`, results });
             }
         });
 
-    } else if (req.method === 'GET') { // Handle GET request for fetching all images
+    } else if (req.method === 'GET') {
         try {
             const images = await readImagesFromDb();
             res.status(200).json(images);
@@ -190,19 +190,19 @@ module.exports = async (req, res) => {
             res.status(500).json({ message: 'Failed to retrieve images.', error: error.message });
         }
 
-    } else if (req.method === 'PUT') { // Handle PUT request for updating image metadata or reordering
+    } else if (req.method === 'PUT') {
         try {
             const updates = JSON.parse(req.body);
 
             if (Array.isArray(updates.updates)) { // Batch reorder
                 const operations = updates.updates.map(update => ({
                     updateOne: {
-                        filter: { _id: update.id }, // Use _id for filtering
+                        filter: { _id: update.id },
                         update: { $set: { order: update.order } }
                     }
                 }));
                 const collection = client.db(dbName).collection('images');
-                await collection.bulkWrite(operations); // Perform multiple updates efficiently
+                await collection.bulkWrite(operations);
                 const updatedImages = await readImagesFromDb();
                 res.status(200).json({ message: 'Image order updated successfully!', images: updatedImages });
             } else { // Single image metadata update
@@ -219,7 +219,7 @@ module.exports = async (req, res) => {
             res.status(500).json({ message: 'Failed to update/reorder images.', error: error.message });
         }
 
-    } else if (req.method === 'DELETE') { // Handle DELETE request for removing an image
+    } else if (req.method === 'DELETE') {
         try {
             const { id } = JSON.parse(req.body);
             if (!id) {
@@ -227,14 +227,12 @@ module.exports = async (req, res) => {
             }
 
             const collection = client.db(dbName).collection('images');
-            // Find image to get Cloudinary Public ID before deleting from DB
-            const imageToDelete = await collection.findOne({ _id: id }); // Use _id for lookup
+            const imageToDelete = await collection.findOne({ _id: id });
 
             if (!imageToDelete) {
                 return res.status(404).json({ message: 'Image not found.' });
             }
 
-            // Delete from Cloudinary
             if (imageToDelete.cloudinaryPublicId) {
                 try {
                     await cloudinary.uploader.destroy(imageToDelete.cloudinaryPublicId);
@@ -244,7 +242,7 @@ module.exports = async (req, res) => {
                 }
             }
 
-            await deleteImageFromDb(id); // Delete from MongoDB
+            await deleteImageFromDb(id);
 
             res.status(200).json({ message: 'Image deleted successfully!', id });
 
