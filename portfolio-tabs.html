@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Portfolio - DesignDuet</title>
+    <title>Our Portfolio with Tabs - DesignDuet</title>
     <link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,18 +50,149 @@
                             '0%': { transform: 'translateX(100%)' },
                             '100%': { transform: 'translateX(0)' },
                         },
+                        'zoom-in-bounce': {
+                            '0%': { transform: 'scale(0.5)', opacity: '0' },
+                            '50%': { transform: 'scale(1.05)', opacity: '1' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
                     },
                     animation: {
                         'fade-in': 'fade-in 0.8s ease-out forwards',
                         'slide-in-left': 'slide-in-left 0.7s ease-out forwards',
                         'slide-in-right': 'slide-in-right 0.7s ease-out forwards',
+                        'zoom-in-bounce': 'zoom-in-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                     },
                 }
             }
         }
     </script>
-</head>
+    <style>
+        /* Lightbox specific styles (minimal, mostly handled by Tailwind) */
+        .lightbox-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
 
+        .lightbox-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: calc(90vh - 80px); /* Adjust for controls/caption space */
+            object-fit: contain;
+            user-select: none;
+            cursor: grab; /* Indicates draggable for panning */
+            transform: scale(1); /* Initial zoom */
+            transition: transform 0.1s ease-out; /* Smooth zoom transitions */
+            transform-origin: center center; /* Zoom from center */
+        }
+
+        /* Panning cursor */
+        .lightbox-image.panning {
+            cursor: grabbing;
+        }
+
+        .lightbox-caption {
+            color: white;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .lightbox-control-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            user-select: none;
+            outline: none;
+        }
+
+        .lightbox-control-btn:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
+
+        .lightbox-close, .lightbox-share {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            user-select: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .lightbox-close { top: 20px; right: 20px; }
+        .lightbox-share { top: 20px; right: 80px; } /* Adjust position for share button */
+        
+        .lightbox-close:hover, .lightbox-share:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .lightbox-control-btn {
+                padding: 10px 15px;
+                font-size: 2rem;
+            }
+            .lightbox-prev { left: 10px; }
+            .lightbox-next { right: 10px; }
+            .lightbox-close, .lightbox-share {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 1rem;
+            }
+            .lightbox-share { right: 70px; }
+            .lightbox-caption { font-size: 1rem; margin-top: 10px; }
+        }
+    </style>
+</head>
 <body class="font-inter text-gray-800 bg-gray-50 flex flex-col min-h-screen">
 
     <header class="bg-white shadow-sm py-4 z-50 sticky top-0">
@@ -97,20 +227,44 @@
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-primary mb-3">Our Dynamic Portfolio</h1>
-            <p class="text-xl text-gray-600">Browse our projects by category.</p>
-        </header>
+        <section class="portfolio-header text-center mb-10 p-6 bg-white rounded-xl shadow-custom-light">
+            <h1 class="text-5xl font-extrabold text-primary mb-4 animate-fade-in">Our Creative Portfolio</h1>
+            <p class="text-lg text-gray-700 max-w-2xl mx-auto animate-fade-in animation-delay-200">
+                Explore our diverse range of design projects, meticulously crafted to bring visions to life. From stunning web designs to impactful graphic art, we deliver excellence.
+            </p>
+        </section>
 
-        <div class="bg-white rounded-xl shadow-custom-light overflow-hidden">
-            <div class="flex flex-wrap border-b border-gray-200 bg-gray-50" id="portfolioTabs">
+        <div class="tabs-container bg-white rounded-xl shadow-custom-light overflow-hidden">
+            <div class="tabs flex flex-wrap border-b border-gray-200 bg-gray-50" id="portfolioTabs">
                 </div>
 
-            <div class="p-6" id="tabContent">
-                <div class="text-center py-10 text-lg text-gray-600">Loading portfolio images...</div>
+            <div class="tab-content p-6" id="tabContent">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="portfolioGrid">
+                    <p class="col-span-full text-center py-10 text-lg text-gray-600">Loading portfolio...</p>
                 </div>
+            </div>
         </div>
     </main>
+
+    <div id="lightbox" class="lightbox-container hidden">
+        <div class="lightbox-content">
+            <img id="lightboxImage" class="lightbox-image animate-zoom-in-bounce" src="" alt="Portfolio Image">
+            <p id="lightboxCaption" class="lightbox-caption"></p>
+        </div>
+        
+        <button id="lightboxClose" class="lightbox-close">
+            <i class="ri-close-line"></i> Close
+        </button>
+        <button id="lightboxShare" class="lightbox-share">
+            <i class="ri-share-line"></i> Share
+        </button>
+        <button id="lightboxPrev" class="lightbox-control-btn lightbox-prev">
+            <i class="ri-arrow-left-s-line"></i>
+        </button>
+        <button id="lightboxNext" class="lightbox-control-btn lightbox-next">
+            <i class="ri-arrow-right-s-line"></i>
+        </button>
+    </div>
 
     <footer class="bg-gray-900 text-white py-10 mt-auto">
         <div class="container mx-auto px-4 lg:px-0 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -153,10 +307,27 @@
 
     <script>
         const portfolioTabs = document.getElementById('portfolioTabs');
-        const tabContent = document.getElementById('tabContent');
-        let allImages = []; // Stores all images fetched from the API
+        const portfolioGrid = document.getElementById('portfolioGrid');
 
-        // Define your fixed categories
+        // Lightbox elements
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        const lightboxCloseBtn = document.getElementById('lightboxClose');
+        const lightboxPrevBtn = document.getElementById('lightboxPrev');
+        const lightboxNextBtn = document.getElementById('lightboxNext');
+        const lightboxShareBtn = document.getElementById('lightboxShare'); // Share button
+
+        let allImages = []; // Stores all fetched images
+        let currentActiveCategory = 'All';
+        let currentDisplayedImages = []; // Images currently shown in the grid
+        let currentImageIndex = 0; // Index of the image currently in the lightbox
+
+        // Zoom and Pan variables
+        let currentZoom = 1;
+        let isPanning = false;
+        let startX, startY, imgX = 0, imgY = 0;
+
         const FIXED_CATEGORIES = ["Web Designs", "Graphic Designs", "Printing Designs", "3D Designs"];
 
         // Mobile menu toggle
@@ -169,106 +340,109 @@
             });
         }
 
-
-        /**
-         * Fetches images from the API and renders them into the portfolio.
-         */
         async function fetchAndRenderImages() {
             try {
-                const response = await fetch('/api/images'); // Fetch from your images API endpoint
+                const response = await fetch('/api/images');
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                allImages = await response.json(); // Store all fetched images
-                renderTabsAndContent(allImages); // Render tabs and content based on fetched images
+                allImages = await response.json();
+                
+                // Sort images by their 'order' property for consistent display
+                // Fallback to uploadDate for stability if order is same or missing
+                allImages.sort((a, b) => (a.order || 0) - (b.order || 0) || new Date(a.uploadDate) - new Date(b.uploadDate));
+
+                renderTabs(allImages);
+                displayImagesForCategory(currentActiveCategory); // Initial display
             } catch (error) {
                 console.error('Error fetching images:', error);
-                tabContent.innerHTML = `<div class="text-center py-10 text-lg text-red-500">Failed to load portfolio images. Error: ${error.message}</div>`;
+                portfolioGrid.innerHTML = `<p class="col-span-full text-center py-10 text-lg text-red-500">Failed to load portfolio images: ${error.message}</p>`;
             }
         }
 
-        /**
-         * Renders the category tabs and initial content based on the provided images.
-         * @param {Array} images - The array of image objects to process.
-         */
-        function renderTabsAndContent(images) {
-            const categoriesToDisplay = ['All', ...FIXED_CATEGORIES]; // Always start with 'All'
+        function renderTabs(images) {
+            // Determine unique categories, adding 'All' and 'Uncategorized' as needed
+            const categories = new Set(FIXED_CATEGORIES);
+            images.forEach(img => {
+                if (!FIXED_CATEGORIES.includes(img.category)) {
+                    categories.add(img.category || 'Uncategorized');
+                }
+            });
+            const categoriesToDisplay = ['All', ...Array.from(categories).sort()];
 
-            // Render Tab Buttons
-            portfolioTabs.innerHTML = ''; // Clear existing tabs before re-rendering
+            portfolioTabs.innerHTML = '';
             categoriesToDisplay.forEach(category => {
                 const button = document.createElement('button');
                 button.classList.add(
-                    'tab-button', // Custom class for JS targeting
-                    'flex-grow', 'py-4', 'px-6', 'text-center', 'cursor-pointer', 'border-b-2',
-                    'border-transparent', 'text-gray-600', 'font-semibold', 'text-lg',
+                    'tab-button',
+                    'flex-grow', 'py-3', 'px-4', 'text-center', 'cursor-pointer', 'border-b-2',
+                    'border-transparent', 'text-gray-600', 'font-semibold', 'text-md',
                     'hover:bg-gray-100', 'hover:text-primary', 'transition-all', 'duration-300'
                 );
-                button.dataset.category = category; // Store category in dataset
+                button.dataset.category = category;
                 button.textContent = category;
-                button.addEventListener('click', () => switchTab(category)); // Attach click listener
+                button.addEventListener('click', () => switchTab(category));
                 portfolioTabs.appendChild(button);
             });
 
-            // Activate 'All' tab by default and display its content
-            const allButton = portfolioTabs.querySelector('[data-category="All"]');
-            if (allButton) {
-                allButton.classList.add('active', 'border-primary', 'bg-white', 'text-primary');
+            // Set 'All' tab as active by default or whichever is current
+            const activeBtn = portfolioTabs.querySelector(`[data-category="${currentActiveCategory}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'border-primary', 'bg-white', 'text-primary');
+            } else { // Fallback if currentActiveCategory doesn't match a button (e.g., initial load)
+                portfolioTabs.querySelector('[data-category="All"]').classList.add('active', 'border-primary', 'bg-white', 'text-primary');
+                currentActiveCategory = 'All';
             }
-            displayImagesForCategory('All');
         }
 
-        /**
-         * Displays images filtered by the selected category.
-         * @param {string} selectedCategory - The category to filter images by.
-         */
         function displayImagesForCategory(selectedCategory) {
-            tabContent.innerHTML = ''; // Clear previous content
-            const imagesToDisplay = allImages.filter(img => {
-                const imgCategory = img.category || 'Uncategorized'; // Default if category is missing
+            portfolioGrid.innerHTML = ''; // Clear previous images
+
+            currentDisplayedImages = allImages.filter(img => {
+                const imgCategory = img.category || 'Uncategorized';
                 if (selectedCategory === 'All') {
-                    return true; // Show all images for 'All' tab
+                    return true;
                 } else {
-                    // Only show images that match one of the FIXED_CATEGORIES
                     return imgCategory === selectedCategory;
                 }
             });
 
-
-            if (imagesToDisplay.length === 0) {
-                tabContent.innerHTML = `<div class="text-center py-10 text-lg text-gray-600"><p>No images found in the '${selectedCategory}' category.</p></div>`;
+            if (currentDisplayedImages.length === 0) {
+                portfolioGrid.innerHTML = `<p class="col-span-full text-center py-10 text-lg text-gray-600">No portfolio items found in the '${selectedCategory}' category.</p>`;
                 return;
             }
 
-            const grid = document.createElement('div');
-            grid.classList.add(
-                'grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4',
-                'gap-6'
-            );
-
-            imagesToDisplay.forEach(image => {
+            currentDisplayedImages.forEach((image, index) => {
                 const portfolioItem = document.createElement('div');
                 portfolioItem.classList.add(
-                    'portfolio-item', // Custom class for JS targeting
-                    'bg-white', 'rounded-lg', 'shadow-md', 'overflow-hidden', 'text-center',
-                    'transform', 'transition-all', 'duration-300', 'hover:scale-105', 'hover:shadow-lg',
-                    'flex', 'flex-col' // Use flex for vertical alignment
+                    'portfolio-item',
+                    'relative', 'overflow-hidden', 'rounded-lg', 'shadow-md', 'group',
+                    'cursor-pointer', 'animate-fade-in'
                 );
+                portfolioItem.dataset.index = index; // Store index for lightbox
 
                 const imgElement = document.createElement('img');
                 imgElement.src = image.imageUrl;
-                imgElement.alt = image.altText || image.filename;
-                imgElement.classList.add('w-full', 'h-48', 'object-cover', 'block', 'border-b', 'border-gray-100');
+                imgElement.alt = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ');
+                imgElement.classList.add(
+                    'w-full', 'h-48', 'object-cover', 'transition-transform', 'duration-300',
+                    'group-hover:scale-105', 'group-hover:opacity-80'
+                );
 
                 const infoDiv = document.createElement('div');
-                infoDiv.classList.add('p-4', 'flex-grow', 'flex', 'flex-col', 'justify-center');
+                infoDiv.classList.add(
+                    'portfolio-item-info',
+                    'absolute', 'bottom-0', 'left-0', 'right-0', 'bg-gradient-to-t',
+                    'from-black/70', 'to-transparent', 'p-4', 'text-white',
+                    'translate-y-full', 'group-hover:translate-y-0', 'transition-transform', 'duration-300'
+                );
 
                 const headingElement = document.createElement('h3');
-                headingElement.classList.add('text-lg', 'font-bold', 'text-primary', 'mb-2');
+                headingElement.classList.add('text-lg', 'font-semibold', 'mb-1');
                 headingElement.textContent = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
                 const imgCategoryParagraph = document.createElement('p');
-                imgCategoryParagraph.classList.add('text-sm', 'text-gray-500');
+                imgCategoryParagraph.classList.add('text-sm', 'text-gray-300');
                 imgCategoryParagraph.textContent = `Category: ${image.category || 'Uncategorized'}`;
 
                 infoDiv.appendChild(headingElement);
@@ -276,32 +450,188 @@
 
                 portfolioItem.appendChild(imgElement);
                 portfolioItem.appendChild(infoDiv);
-                grid.appendChild(portfolioItem);
-            });
+                portfolioGrid.appendChild(portfolioItem);
 
-            tabContent.appendChild(grid);
+                // Add click listener to open lightbox
+                portfolioItem.addEventListener('click', () => openLightbox(index));
+            });
         }
 
-        /**
-         * Handles tab switching, updating active button class and displayed images.
-         * @param {string} category - The category to switch to.
-         */
         function switchTab(category) {
+            currentActiveCategory = category;
+            // Remove active class from all buttons
             document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active', 'border-primary', 'bg-white', 'text-primary'); // Remove active styling
-                btn.classList.add('border-transparent', 'bg-gray-50', 'text-gray-600'); // Add default styling
+                btn.classList.remove('active', 'border-primary', 'bg-white', 'text-primary');
+                btn.classList.add('border-transparent', 'bg-gray-50', 'text-gray-600');
             });
+            // Add active class to the clicked button
             const activeBtn = document.querySelector(`.tab-button[data-category="${category}"]`);
             if (activeBtn) {
                 activeBtn.classList.remove('border-transparent', 'bg-gray-50', 'text-gray-600');
-                activeBtn.classList.add('active', 'border-primary', 'bg-white', 'text-primary'); // Add active styling
+                activeBtn.classList.add('active', 'border-primary', 'bg-white', 'text-primary');
             }
-            displayImagesForCategory(category); // Display images for the selected category
+            displayImagesForCategory(category);
         }
 
-        // Initial fetch and render when the page loads
+        // --- Lightbox Functions ---
+
+        function openLightbox(index) {
+            currentImageIndex = index;
+            updateLightboxContent();
+            lightbox.classList.add('active'); // Use 'active' class for opacity/visibility transition
+            lightbox.classList.remove('hidden'); // Ensure it's not 'display: none'
+            resetZoomAndPan();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            // Give time for transition before hiding completely
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+            }, 300); 
+            resetZoomAndPan();
+        }
+
+        function updateLightboxContent() {
+            const image = currentDisplayedImages[currentImageIndex];
+            if (image) {
+                lightboxImage.src = image.imageUrl;
+                lightboxImage.alt = image.altText || 'Portfolio Image';
+                lightboxCaption.textContent = image.altText || image.filename.split('.')[0].replace(/[-_]/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            }
+        }
+
+        function showNextImage() {
+            currentImageIndex = (currentImageIndex + 1) % currentDisplayedImages.length;
+            updateLightboxContent();
+            resetZoomAndPan();
+        }
+
+        function showPrevImage() {
+            currentImageIndex = (currentImageIndex - 1 + currentDisplayedImages.length) % currentDisplayedImages.length;
+            updateLightboxContent();
+            resetZoomAndPan();
+        }
+
+        function resetZoomAndPan() {
+            currentZoom = 1;
+            imgX = 0;
+            imgY = 0;
+            lightboxImage.style.transform = `scale(${currentZoom}) translate(${imgX}px, ${imgY}px)`;
+            lightboxImage.style.cursor = 'grab';
+            isPanning = false;
+        }
+
+        // --- Zoom with Mouse Wheel ---
+        lightboxImage.addEventListener('wheel', (e) => {
+            e.preventDefault(); // Prevent page scrolling
+            const zoomAmount = 0.1;
+            const oldZoom = currentZoom;
+
+            if (e.deltaY < 0) { // Zoom in
+                currentZoom = Math.min(currentZoom + zoomAmount, 3); // Max zoom 3x
+            } else { // Zoom out
+                currentZoom = Math.max(currentZoom - zoomAmount, 0.5); // Min zoom 0.5x
+            }
+
+            // Adjust pan to zoom towards mouse pointer
+            const rect = lightboxImage.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const scaleFactor = currentZoom / oldZoom;
+            imgX = (imgX * scaleFactor) + (mouseX * (1 - scaleFactor));
+            imgY = (imgY * scaleFactor) + (mouseY * (1 - scaleFactor));
+
+            lightboxImage.style.transform = `scale(${currentZoom}) translate(${imgX}px, ${imgY}px)`;
+        });
+
+        // --- Pan with Mouse Drag ---
+        lightboxImage.addEventListener('mousedown', (e) => {
+            if (currentZoom > 1) { // Only pan if zoomed in
+                isPanning = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                lightboxImage.classList.add('panning');
+            }
+        });
+
+        lightbox.addEventListener('mousemove', (e) => { // Use lightbox for wider drag detection
+            if (!isPanning) return;
+            e.preventDefault();
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            imgX += dx / currentZoom; // Divide by currentZoom to make pan speed consistent
+            imgY += dy / currentZoom;
+            
+            // Re-apply transform
+            lightboxImage.style.transform = `scale(${currentZoom}) translate(${imgX}px, ${imgY}px)`;
+            
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        lightbox.addEventListener('mouseup', () => {
+            isPanning = false;
+            lightboxImage.classList.remove('panning');
+        });
+        lightbox.addEventListener('mouseleave', () => { // Stop panning if mouse leaves lightbox area
+            isPanning = false;
+            lightboxImage.classList.remove('panning');
+        });
+
+        // --- Share Button ---
+        lightboxShareBtn.addEventListener('click', async () => {
+            const imageUrlToShare = lightboxImage.src;
+            try {
+                if (navigator.clipboard) {
+                    await navigator.clipboard.writeText(imageUrlToShare);
+                    alert('Image link copied to clipboard!');
+                } else {
+                    // Fallback for browsers that don't support navigator.clipboard
+                    const tempInput = document.createElement('input');
+                    tempInput.value = imageUrlToShare;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    alert('Image link copied to clipboard!');
+                }
+            } catch (err) {
+                console.error('Failed to copy link:', err);
+                alert('Failed to copy link. Please copy it manually: ' + imageUrlToShare);
+            }
+        });
+
+
+        // --- Event Listeners for Lightbox Controls ---
+        lightboxCloseBtn.addEventListener('click', closeLightbox);
+        lightboxPrevBtn.addEventListener('click', showPrevImage);
+        lightboxNextBtn.addEventListener('click', showNextImage);
+
+        // Close lightbox when clicking on the overlay (but not the image itself)
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'ArrowRight') {
+                    showNextImage();
+                } else if (e.key === 'ArrowLeft') {
+                    showPrevImage();
+                } else if (e.key === 'Escape') {
+                    closeLightbox();
+                }
+            }
+        });
+
+        // Initial fetch and render on page load
         fetchAndRenderImages();
     </script>
 </body>
-
 </html>

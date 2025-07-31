@@ -3,7 +3,7 @@ const { IncomingForm } = require('formidable');
 const { v4: uuidv4 } = require('uuid');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
-const { MongoClient, ObjectId } = require('mongodb'); // Keep ObjectId in case it's needed for other parts, but we'll use string _id for our operations.
+const { MongoClient } = require('mongodb'); 
 const fs = require('fs/promises');
 
 // --- Cloudinary Configuration ---
@@ -52,7 +52,7 @@ function uploadToCloudinary(buffer, options) {
 async function readImagesFromDb() {
     await connectToMongoDB();
     const collection = client.db(dbName).collection('images');
-    const images = await collection.find({}).sort({ order: 1, uploadDate: 1 }).toArray();
+    const images = await collection.find({}).sort({ order: 1, uploadDate: -1 }).toArray(); // Sort by order ascending, then uploadDate descending for stability
     return images.map(img => {
         // Ensure 'id' is always the string UUID that matches the _id in DB
         return {
@@ -117,10 +117,24 @@ module.exports = async (req, res) => {
             const altText = fields.altText && fields.altText[0] ? fields.altText[0] : '';
             const category = fields.category && fields.category[0] ? fields.category[0] : 'Uncategorized';
 
-            const results = [];
-            const existingImages = await readImagesFromDb(); // Get existing images once
-            let maxOrder = existingImages.length > 0 ? Math.max(...existingImages.map(img => img.order || 0)) : 0;
+            const collection = client.db(dbName).collection('images');
+            
+            // Step 1: Increment order of all existing images
+            try {
+                // Increment order by the number of new images being added
+                const incrementAmount = imageFiles.length;
+                await collection.updateMany(
+                    {}, // Filter for all documents
+                    { $inc: { order: incrementAmount } } // Increment their order by the number of new images
+                );
+                console.log(`Incremented order of existing images by ${incrementAmount}.`);
+            } catch (updateError) {
+                console.error("Error incrementing existing image orders:", updateError);
+                return res.status(500).json({ message: "Failed to prepare database for new images.", error: updateError.message });
+            }
 
+            const results = [];
+            let currentNewOrder = 1; // Start new images from order 1
 
             for (const imageFile of imageFiles) {
                 let fileBuffer;
@@ -147,7 +161,6 @@ module.exports = async (req, res) => {
                         console.warn(`Could not delete temporary file ${imageFile.filepath}: ${unlinkErr.message}`);
                     });
                     
-                    maxOrder++; // Increment order for each new image
                     const newId = uuidv4();
                     const newImage = {
                         id: newId, // This is the UUID string
@@ -156,7 +169,7 @@ module.exports = async (req, res) => {
                         imageUrl: cloudinaryUploadResult.secure_url,
                         altText: altText || originalFilename.split('.')[0].replace(/[-_]/g, ' '),
                         category: category, // Apply global category to each image
-                        order: maxOrder,
+                        order: currentNewOrder++, // Assign 1, then 2, etc., for new images
                         uploadDate: new Date().toISOString()
                     };
 
@@ -208,7 +221,7 @@ module.exports = async (req, res) => {
                 }));
                 const collection = client.db(dbName).collection('images');
                 await collection.bulkWrite(operations);
-                const updatedImages = await readImagesFromDb();
+                const updatedImages = await readImagesFromDb(); // Re-read to get the new sorted order
                 res.status(200).json({ message: 'Image order updated successfully!', images: updatedImages });
             } else { // Single image metadata update
                 const { id, altText, category } = updates;
@@ -252,6 +265,19 @@ module.exports = async (req, res) => {
 
             // Delete from MongoDB using the same 'id' (UUID string)
             await collection.deleteOne({ _id: id });
+
+            // After deletion, re-normalize orders to fill gaps and keep sequential
+            const remainingImages = await collection.find({}).sort({ order: 1 }).toArray();
+            const bulkOps = remainingImages.map((img, index) => ({
+                updateOne: {
+                    filter: { _id: img._id },
+                    update: { $set: { order: index + 1 } }
+                }
+            }));
+            if (bulkOps.length > 0) {
+                await collection.bulkWrite(bulkOps);
+                console.log("Renormalized image orders after deletion.");
+            }
 
             res.status(200).json({ message: 'Image deleted successfully!', id });
 
