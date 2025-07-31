@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Portfolio</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Basic styling for the portfolio page, feel free to expand or integrate with your existing CSS */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .portfolio-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .portfolio-header h1 {
+            color: #007bff; /* Example brand color */
+            margin-bottom: 10px;
+        }
+        .portfolio-header p {
+            color: #555;
+            font-size: 1.1em;
+        }
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .portfolio-item {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .portfolio-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        .portfolio-item img {
+            width: 100%;
+            height: 220px; /* Fixed height for consistent display */
+            object-fit: cover; /* Ensures images cover the area without distortion */
+            display: block;
+            border-bottom: 1px solid #eee;
+        }
+        .portfolio-item-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .portfolio-item h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #007bff; /* Example brand color */
+            font-size: 1.2em;
+        }
+        .portfolio-item p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #666;
+            word-wrap: break-word; /* Ensure long filenames wrap */
+        }
+        .loading-message, .error-message, .no-images-message {
+            text-align: center;
+            grid-column: 1 / -1; /* Make it span across all columns */
+            padding: 50px;
+            font-size: 1.2em;
+            color: #555;
+        }
+        .error-message {
+            color: #dc3545; /* Red for errors */
+        }
+
+        /* Optional: Responsive adjustments */
+        @media (max-width: 768px) {
+            .portfolio-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            .portfolio-item img {
+                height: 180px;
+            }
+        }
+        @media (max-width: 480px) {
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .portfolio-item img {
+                height: 150px;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="portfolio-header">
+        <h1>Our Creative Portfolio</h1>
+        <p>Explore a selection of our recent projects and designs.</p>
+    </header>
+
+    <main class="portfolio-grid" id="portfolioGrid">
+        <div class="loading-message">Loading portfolio images...</div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/portfolio-images') // This is the API endpoint we'll create
+                .then(response => {
+                    if (!response.ok) {
+                        // Throw an error with the status for better debugging
+                        return response.json().then(err => {
+                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${err.message || 'Unknown error'}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(images => {
+                    const portfolioGrid = document.getElementById('portfolioGrid');
+                    portfolioGrid.innerHTML = ''; // Clear loading message
+
+                    if (images.length === 0) {
+                        portfolioGrid.innerHTML = '<div class="no-images-message"><p>No images found in the portfolio yet. Check back soon!</p></div>';
+                        return;
+                    }
+
+                    images.forEach(imageName => {
+                        const portfolioItem = document.createElement('div');
+                        portfolioItem.classList.add('portfolio-item');
+
+                        const imgElement = document.createElement('img');
+                        imgElement.src = `assets/img/${imageName}`;
+                        imgElement.alt = imageName.split('.')[0].replace(/[-_]/g, ' ').trim(); // Generate a cleaner alt text
+
+                        const infoDiv = document.createElement('div');
+                        infoDiv.classList.add('portfolio-item-info');
+
+                        const headingElement = document.createElement('h3');
+                        headingElement.textContent = imageName.split('.')[0].replace(/[-_]/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); // Capitalize each word for title
+
+                        const imgNameParagraph = document.createElement('p');
+                        imgNameParagraph.textContent = `File: ${imageName}`;
+
+                        infoDiv.appendChild(headingElement);
+                        infoDiv.appendChild(imgNameParagraph);
+
+                        portfolioItem.appendChild(imgElement);
+                        portfolioItem.appendChild(infoDiv);
+                        portfolioGrid.appendChild(portfolioItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching portfolio images:', error);
+                    const portfolioGrid = document.getElementById('portfolioGrid');
+                    portfolioGrid.innerHTML = `<div class="error-message"><p>Failed to load portfolio images. Please try again later.</p><p>Error: ${error.message}</p></div>`;
+                });
+        });
+    </script>
+</body>
+</html>
